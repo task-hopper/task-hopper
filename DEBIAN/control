@@ -1,0 +1,8 @@
+Package: hop
+Version: 0.0.1
+Maintainer: Task Hopper Development Team <team.taskhopper@gmail.com>
+Uploaders: Josh Crank <joshuatcrank@gmail.com>, Jarrett Drouillard <jarrett@thestyl.us>
+Description: A project management CLI
+Homepage: https://github.com/task-hopper/task-hopper
+Architecture: all
+Depends: python3
