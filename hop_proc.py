@@ -22,8 +22,9 @@ def load_commands():
 
 
 def main():
-    #  carrot_bunch = CarrotBunch('carrots')
-    #  carrot_bunch.apply_all_carrots_on_value(5)
+    # print directive before showing help message
+    if sys.argv[-1] in ['-h', '--help']:
+        print('__message__')
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
@@ -38,3 +39,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# carrot implementation
+#  carrot_bunch = CarrotBunch('carrots')
+#  carrot_bunch.apply_all_carrots_on_value(5)
