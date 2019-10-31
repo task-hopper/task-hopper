@@ -1,0 +1,24 @@
+# copy the contents of this file to ~/.hop/hop.sh
+# make sure to give executable permissions `chmod +x ~/.hop/hop.sh`
+# Add `source ~/.hop/hop.sh` to your bashrc/zshrc
+
+hop() {
+  local cmd_result=()
+  while IFS= read -r line ; do
+    cmd_result+=( "$line" )
+  done < <(pipenv run python hop_proc.py $@)
+
+  local directive=$cmd_result[1]
+
+  if [[ "$directive" == '__message__' ]]; then
+    for line in "${cmd_result[@]:1}"; do
+      echo "$line"
+    done
+  elif [[ "$directive" == '__instructions__' ]]; then
+    for line in "${cmd_result[@]:1}"; do
+      eval "$line"
+    done
+  else
+    echo 'Invalid command directive'
+  fi
+}
