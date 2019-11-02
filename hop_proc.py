@@ -1,10 +1,13 @@
 from carrot_bunch import CarrotBunch
-from commands.hop_command import HopCommand
-from config_handler import ConfigHandler
+from commands._hop_command import HopCommand
+from config_handler import configs
+from helpers.command_tools import command_hooks, compose
+from os import getcwd
 import argparse
 import inspect
 import pkgutil
 import sys
+
 
 # TODO roll into central load_module helper
 def load_commands():
@@ -20,6 +23,9 @@ def load_commands():
                     cmds[cmd_cls.alias] = cmd_cls
     return cmds
 
+@command_hooks
+def run_command(command, parsed_args):
+    command.process_command(parsed_args)
 
 def main():
     # print directive before showing help message
@@ -34,8 +40,7 @@ def main():
         cls.setup_command(subparsers)
 
     parsed_args = parser.parse_args(sys.argv[1:])
-    cmds[parsed_args.subparser_name].process_command(parsed_args)
-
+    run_command(cmds[parsed_args.subparser_name], parsed_args)
 
 if __name__ == '__main__':
     main()

@@ -1,4 +1,6 @@
-from helpers.utils import apath
+from helpers.command_tools import compose
+from helpers.utils import apath, issubdir
+from os import getcwd
 import os.path as path
 import yaml
 
@@ -8,11 +10,11 @@ class ConfigHandler:
         with open(apath('~/.hoprc')) as f:
             self.configs = yaml.load(f, Loader=yaml.FullLoader)
 
-    def project_configs(self, pname):
+    def project_configs(self, project_name):
         project = (
             self.configs
             .get('projects', {})
-            .get(pname))
+            .get(project_name))
 
         if project:
             project_root = project.get('path')
@@ -25,6 +27,19 @@ class ConfigHandler:
                 else:
                     return project
             else:
-                sys.exit(f'path is not configured for project {project}')
+                compose('error', f'path is not configured for project {project}')
         else:
-            sys.exit(f'project is not configured')
+            compose('error', f'project is not configured')
+
+    def current_project(self):
+        current_project = None
+        project_paths = { k: apath(v['path']) for k,v in self.configs.get('projects', {}).items() } 
+        current_path = getcwd()
+        for project, project_path in project_paths.items():
+            if issubdir(current_path, project_path):
+                current_project = project
+
+        return current_project
+
+
+configs = ConfigHandler()
