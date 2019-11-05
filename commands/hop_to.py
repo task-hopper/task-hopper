@@ -4,7 +4,7 @@ from composer import composer
 from config_handler import configs
 from ._hop_command import HopCommand
 
-class CmdTo(HopCommand):
+class To(HopCommand):
     def __init__(self):
         self.alias = 'to'
 
@@ -20,4 +20,3 @@ class CmdTo(HopCommand):
 
         # export configured environment variables if autoload is enabled
         Env.stage(project_name=parsed_args.project)
-

@@ -4,15 +4,15 @@ from config_handler import configs
 import inspect
 import pkgutil
 
-# decorator for implementing before / after commands
-def command_hooks(func, enabled=True):
-    def wrapper(*args, **kwargs):
-         
-        composer.add('message', 'Running before...')
-        func(*args, **kwargs)
-        composer.add('message', 'Running after...')
 
-    return wrapper
+# decorator for implementing before / after commands
+#  def command_hooks(func, enabled=True):
+    #  def wrapper(*args, **kwargs):
+        #  composer.add('message', 'Running before...')
+        #  func(*args, **kwargs)
+        #  composer.add('message', 'Running after...')
+
+    #  return wrapper
 
 
 def load_commands():
@@ -30,21 +30,16 @@ def load_commands():
 
 
 # TODO rename this method
-def check_command(command_arg):
+def get_config_command(command_arg):
     current_project = configs.current_project()
-    configured_command = None
+    config_command = None
 
+    # use project-specific command if configured
     if current_project:
-        configured_command = configs.project_configs(current_project).get('commands', {}).get(command_arg)
+        config_command = configs.project_configs(current_project).get('commands', {}).get(command_arg)
 
-    if not configured_command:
-        configured_command = configs.configs.get('commands', {}).get(command_arg)
+    # use global command if configured
+    if not config_command:
+        config_command = configs.configs.get('commands', {}).get(command_arg)
 
-    if configured_command: 
-        if isinstance(configured_command, dict):
-            command = configured_command.get('command')
-            composer.add('task', command)
-        else:
-            composer.add('task', configured_command)
-
-        return True
+    return config_command 

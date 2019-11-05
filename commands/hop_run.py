@@ -2,7 +2,7 @@ from ._hop_command import HopCommand
 from composer import composer
 from config_handler import configs
 
-class HopcmdRun(HopCommand):
+class Run(HopCommand):
     def __init__(self):
         self.alias = 'run'
 
