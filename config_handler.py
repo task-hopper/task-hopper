@@ -1,4 +1,4 @@
-from helpers.command_tools import compose
+from composer import composer
 from helpers.utils import apath, issubdir
 from os import getcwd
 import os.path as path
@@ -27,9 +27,9 @@ class ConfigHandler:
                 else:
                     return project
             else:
-                compose('error', f'path is not configured for project {project}')
+                composer.add('error', f'path is not configured for project {project}')
         else:
-            compose('error', f'project is not configured')
+            composer.add('error', f'project is not configured')
 
     def current_project(self):
         current_project = None

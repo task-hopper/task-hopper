@@ -1,6 +1,6 @@
-class Builder():
+class Task():
     @classmethod
-    def build(cls):
+    def stage(cls):
         pass
 
     @classmethod

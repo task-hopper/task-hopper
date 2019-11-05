@@ -1,5 +1,5 @@
-from helpers.command_tools import compose
 from ._hop_command import HopCommand
+from composer import composer
 from config_handler import configs
 
 class HopcmdRun(HopCommand):
@@ -24,9 +24,9 @@ class HopcmdRun(HopCommand):
                 .get(parsed_args.command_alias, None))
 
             if command is None:
-                compose('error', f"'{parsed_args.command_alias}' is not a configured command")
+                composer.add('error', f"'{parsed_args.command_alias}' is not a configured command")
             else:
-                compose('instructions', command)
+                composer.add('task', command)
         else:
-            compose('error', 'Unable to run command. Not in a project.')
+            composer.add('error', 'Unable to run command. Not in a project.')
 
