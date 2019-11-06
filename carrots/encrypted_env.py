@@ -1,6 +1,7 @@
 import carrot_bunch
+from tasks.env import Env
 
-class SayIt(carrot_bunch.Carrot):
+class EncryptedEnv(carrot_bunch.Carrot):
     def __init__(self):
         super().__init__()
         self.description = 'SayIt function'

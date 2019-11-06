@@ -41,5 +41,4 @@ class ConfigHandler:
         else:
             composer.add('error', f'Not in a project or project is not configured')
 
-
 configs = ConfigHandler()

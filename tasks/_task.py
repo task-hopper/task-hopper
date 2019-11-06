@@ -5,4 +5,4 @@ class Task():
 
     @classmethod
     def patch(cls, func):
-        cls.build = func
+        cls.stage = func

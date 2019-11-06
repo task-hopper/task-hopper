@@ -4,7 +4,7 @@ from config_handler import configs
 from helpers.utils import apath
 from os.path import exists
 from tasks.cd import CD
-from tasks.env import Env
+from tasks.change_env import ChangeEnv
 
 class To(HopCommand):
     def __init__(self):
@@ -24,4 +24,4 @@ class To(HopCommand):
             # prompt cd
             CD.stage(project_name=parsed_args.destination)
             # export configured environment variables if autoload is enabled
-            Env.stage(project_name=parsed_args.destination)
+            ChangeEnv.stage(project_name=parsed_args.destination, env='autoload')
