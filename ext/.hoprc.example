@@ -1,0 +1,23 @@
+projects:
+  navui:
+    name: Navigator UI
+    path: '~/repos/cordata/navigator-ui'
+    commands:
+      s: yarn start
+      st: echo project st command
+    env:
+      autoload: local
+      default:
+        HOP_TEST: 'default set'
+      local:
+        HOP_ENV: local
+      staging:
+        HOP_ENV: staging
+      prod:
+        HOP_ENV: prod
+  navapi:
+    path: '~/repos/cordata/navigator-api'
+    commands:
+      s: puma -p 3000
+commands:
+  st: echo custom st command

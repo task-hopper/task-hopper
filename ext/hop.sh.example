@@ -1,24 +1,21 @@
-# copy the contents of this file to ~/.hop/hop.sh
-# make sure to give executable permissions `chmod +x ~/.hop/hop.sh`
-# Add `source ~/.hop/hop.sh` to your bashrc/zshrc
-
 hop() {
   local cmd_result=()
+  local directive=''
   while IFS= read -r line ; do
-    cmd_result+=( "$line" )
-  done < <(pipenv run python hop_proc.py $@)
-
-  local directive=$cmd_result[1]
-
-  if [[ "$directive" == '__message__' ]]; then
-    for line in "${cmd_result[@]:1}"; do
-      echo "$line"
-    done
-  elif [[ "$directive" == '__instructions__' ]]; then
-    for line in "${cmd_result[@]:1}"; do
-      eval "$line"
-    done
-  else
-    echo 'Invalid command directive'
-  fi
+    if [[ "$line" =~ ^_{2}hop_{1}[A-Za-z]*_{2}$ ]]; then
+      directive="$line"
+    else
+      if [[ "$directive" == '__hop_message__' ]]; then
+        echo "$line"
+      elif [[ "$directive" == '__hop_task__' ]]; then
+        eval "$line"
+      elif [[ "$directive" == '__hop_error__' ]]; then
+        local FONT_RED='\033[0;31m'
+        local FONT_DEFAULT='\033[0m'
+        echo "${FONT_RED}${line}${FONT_DEFAULT}"
+      else
+        echo 'Invalid command directive'
+      fi
+    fi
+  done < <(python /home/crank/repos/personal/task-hopper/hop_proc.py $@)
 }
