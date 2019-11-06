@@ -10,7 +10,17 @@ class ConfigHandler:
         with open(apath('~/.hoprc')) as f:
             self.configs = yaml.load(f, Loader=yaml.FullLoader)
 
-    def project_configs(self, project_name):
+    def current_project(self):
+        current_project = None
+        project_paths = { k: apath(v['path']) for k,v in self.configs.get('projects', {}).items() } 
+        current_path = getcwd()
+        for project, project_path in project_paths.items():
+            if issubdir(current_path, project_path):
+                current_project = project
+
+        return current_project
+
+    def project_configs(self, project_name=current_project):
         project = (
             self.configs
             .get('projects', {})
@@ -29,17 +39,7 @@ class ConfigHandler:
             else:
                 composer.add('error', f'path is not configured for project {project}')
         else:
-            composer.add('error', f'project is not configured')
-
-    def current_project(self):
-        current_project = None
-        project_paths = { k: apath(v['path']) for k,v in self.configs.get('projects', {}).items() } 
-        current_path = getcwd()
-        for project, project_path in project_paths.items():
-            if issubdir(current_path, project_path):
-                current_project = project
-
-        return current_project
+            composer.add('error', f'Not in a project or project is not configured')
 
 
 configs = ConfigHandler()

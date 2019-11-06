@@ -1,7 +1,7 @@
-from tasks._task import Task
 from composer import composer
 from config_handler import configs
 from helpers.utils import apath
+from tasks._task import Task
 
 class CD(Task):
     @classmethod

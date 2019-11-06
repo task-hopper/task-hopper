@@ -1,8 +1,10 @@
-from tasks.cd import CD
-from tasks.env import Env
+from ._hop_command import HopCommand
 from composer import composer
 from config_handler import configs
-from ._hop_command import HopCommand
+from helpers.utils import apath
+from os.path import exists
+from tasks.cd import CD
+from tasks.env import Env
 
 class To(HopCommand):
     def __init__(self):
@@ -12,11 +14,14 @@ class To(HopCommand):
         to_parser = subparsers.add_parser(
             'to', help='changes directory')
         to_parser.add_argument(
-            'project', help='specify project to switch to')
+            'destination', help='specify project/directory to switch to')
 
     def process_command(self, parsed_args):
-        # prompt cd
-        CD.stage(project_name=parsed_args.project)
-
-        # export configured environment variables if autoload is enabled
-        Env.stage(project_name=parsed_args.project)
+        is_dir = exists(apath(parsed_args.destination))
+        if is_dir:
+            CD.stage(directory=apath(parsed_args.destination))
+        else:
+            # prompt cd
+            CD.stage(project_name=parsed_args.destination)
+            # export configured environment variables if autoload is enabled
+            Env.stage(project_name=parsed_args.destination)
