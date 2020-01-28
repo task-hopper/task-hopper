@@ -12,9 +12,9 @@ class ChangeEnv(Task):
             environments = list(filter(None, ['default', autoload_type]))
         elif env:
             environments = env if isinstance(env, list) else [env]
-        
-        exports = [ f'export {var}={val}'
+
+        exports = [ f'export {var}="{val}"'
                     for env, vars in project_env.items() if env in environments
                     for var, val in vars.items() ]
 
-        composer.add('task', exports) 
+        composer.add('task', exports)
