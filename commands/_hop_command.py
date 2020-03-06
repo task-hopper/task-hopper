@@ -1,7 +1,7 @@
 class HopCommand(object):
-    def __init__(self):
+    def __init__(self, alias=None):
         super().__init__()
-        self.alias = None
+        self.alias = alias
 
     def setup_command(self, subparsers):
         raise NotImplementedError

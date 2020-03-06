@@ -3,6 +3,7 @@ from composer import composer
 from config_handler import configs
 import inspect
 import pkgutil
+import types
 
 
 # decorator for implementing before / after commands
@@ -28,18 +29,25 @@ def load_commands():
                     cmds[cmd_cls.alias] = cmd_cls
     return cmds
 
-
-# TODO rename this method
-def get_config_command(command_arg):
+def load_config_commands():
+    cmds = {}
     current_project = configs.current_project()
-    config_command = None
-
-    # use project-specific command if configured
     if current_project:
-        config_command = configs.project_configs(current_project).get('commands', {}).get(command_arg)
+        config_commands = configs.project_configs(current_project).get('commands', {})
+        for a,c in config_commands.items():
+            command = HopCommand(alias=a)
+            help_msg = (c[:35] + '...') if len(c) > 35 else c
+            def new_setup_command(self, subparsers, a=a, help_msg=help_msg):
+                custom_parser = subparsers.add_parser(
+                    a, help=help_msg)
+                custom_parser.set_defaults(cmd='default')
 
-    # use global command if configured
-    if not config_command:
-        config_command = configs.configs.get('commands', {}).get(command_arg)
+            def new_process_command(self, parsed_args, c=c):
+                composer.add('task', c)
 
-    return config_command 
+            command.setup_command = types.MethodType(new_setup_command, command)
+            command.process_command = types.MethodType(new_process_command, command)
+
+            cmds[a] = command
+    return cmds
+
