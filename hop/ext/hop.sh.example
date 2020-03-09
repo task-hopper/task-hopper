@@ -6,16 +6,16 @@ hop() {
       directive="$line"
     else
       if [[ "$directive" == '__hop_message__' ]]; then
-        echo "$line"
+        echo -e "$line"
       elif [[ "$directive" == '__hop_task__' ]]; then
         eval "$line"
       elif [[ "$directive" == '__hop_error__' ]]; then
         local FONT_RED='\033[0;31m'
         local FONT_DEFAULT='\033[0m'
-        echo "${FONT_RED}${line}${FONT_DEFAULT}"
+        echo -e "${FONT_RED}${line}${FONT_DEFAULT}"
       else
-        echo 'Invalid command directive'
+        echo -e 'Invalid command directive'
       fi
     fi
-  done < <(python /home/crank/repos/personal/task-hopper/hop_proc.py $@)
+  done < <(python /home/crank/repos/personal/task-hopper/hop $@)
 }
