@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 from composer import composer
-from helpers.command_tools import load_config_commands, load_commands
+from helpers.command_tools import load_config_commands, load_commands, load_carrot_commands
+from helpers.utils import apath
 import argparse
 import sys
+
+sys.path.append(apath('~/repos/personal/task-hopper'))
 
 #  @command_hooks
 def run_hop_command(command, parsed_args):
@@ -16,7 +19,7 @@ def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
 
-    cmds = {**load_commands(), **load_config_commands()}
+    cmds = {**load_commands(), **load_config_commands(), **load_carrot_commands()}
     for alias, cls in cmds.items():
         cls.setup_command(subparsers)
 
@@ -29,6 +32,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-# carrot implementation
-#  carrot_bunch = CarrotBunch('carrots')
-#  carrot_bunch.apply_all_carrots_on_value(5)
