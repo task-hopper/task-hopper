@@ -1,24 +1,30 @@
 from commands._hop_command import HopCommand
 from composer import composer
 from config_handler import configs
+from helpers.utils import apath
 import inspect
 import pkgutil
+import sys
 import types
 
-
-# decorator for implementing before / after commands
-#  def command_hooks(func, enabled=True):
-    #  def wrapper(*args, **kwargs):
-        #  composer.add('message', 'Running before...')
-        #  func(*args, **kwargs)
-        #  composer.add('message', 'Running after...')
-
-    #  return wrapper
-
+sys.path.append(apath('~/.hop/lib'))
 
 def load_commands():
     cmds = {}
     imported_package = __import__('commands', fromlist=['blah'])
+    for _, command_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + '.'):
+        if not is_pkg:
+            command_module = __import__(command_name, fromlist=['blah'])
+            cls_members = inspect.getmembers(command_module, inspect.isclass)
+            for (_, c) in cls_members:
+                if issubclass(c, HopCommand) & (c is not HopCommand):
+                    cmd_cls = c()
+                    cmds[cmd_cls.alias] = cmd_cls
+    return cmds
+
+def load_carrot_commands():
+    cmds = {}
+    imported_package = __import__('carrots', fromlist=['blah'])
     for _, command_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + '.'):
         if not is_pkg:
             command_module = __import__(command_name, fromlist=['blah'])
