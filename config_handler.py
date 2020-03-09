@@ -12,7 +12,7 @@ class ConfigHandler:
 
     def current_project(self):
         current_project = None
-        project_paths = { k: apath(v['path']) for k,v in self.configs.get('projects', {}).items() } 
+        project_paths = { k: apath(v['path']).rstrip('/') for k,v in self.configs.get('projects', {}).items() }
         current_path = getcwd()
         for project, project_path in project_paths.items():
             if issubdir(current_path, project_path):
