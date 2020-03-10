@@ -1,7 +1,5 @@
 from ._hop_command import HopCommand
-from composer import composer
 from config_handler import configs
-from tasks.get_project_detail import GetProjectDetail
 
 class Project(HopCommand):
     def __init__(self):
@@ -20,5 +18,5 @@ class Project(HopCommand):
             action='store_const', const='path', dest='current_type')
 
     def process_command(self, parsed_args):
-        GetProjectDetail.stage(detail_type=parsed_args.current_type)
+        self.push_task('GetProjectDetail', detail_type=parsed_args.current_type)
 

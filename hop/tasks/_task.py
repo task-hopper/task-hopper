@@ -1,8 +1,11 @@
 class Task():
-    @classmethod
-    def stage(cls):
+    def __init__(self, composer=None):
+        super().__init__()
+        self.composer = composer
+
+    def stage(self):
         pass
 
     @classmethod
-    def patch(cls, func):
-        cls.stage = func
+    def patch(self, func):
+        self.stage = func
