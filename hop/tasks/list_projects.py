@@ -1,11 +1,9 @@
-from composer import composer
 from config_handler import configs
 from tasks._task import Task
 
 
 class ListProjects(Task):
-    @classmethod
-    def stage(cls):
+    def stage(self):
         all_projects = configs.configs['projects']
         current_project = configs.current_project()
 
@@ -17,4 +15,4 @@ class ListProjects(Task):
         message.append('')
         message.append('# => - current')
 
-        composer.add('message', message)
+        self.composer.add('message', message)

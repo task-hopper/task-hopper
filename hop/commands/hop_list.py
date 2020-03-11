@@ -11,4 +11,4 @@ class List(HopCommand):
             'list', help='lists configured projects')
 
     def process_command(self, parsed_args):
-        ListProjects.stage()
+        self.push_task('ListProjects')
