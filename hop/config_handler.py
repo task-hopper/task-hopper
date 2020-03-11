@@ -39,24 +39,6 @@ class ConfigHandler:
             else:
                 composer.add('error', f'path is not configured for project {project}')
         else:
-            parent_config = self.configs.get('project_parents')
-            if parent_config:
-                parents = [apath(i) for i in self.configs.get('project_parents')]
-                for p in parents:
-                    if path.exists(p):
-                        project_root = f'{p}/{project_name}'
-                        if path.exists(project_root):
-                            config_path = f'{project_root}/.hop'
-                            if path.exists(config_path):
-                                project_override = { 'path': project_root }
-                                with open(config_path) as f:
-                                    return {**project_override, **yaml.load(f, Loader=yaml.FullLoader)}
-                            else:
-                                # composer.add('warn', f'No .hop file found in project {project_name}')
-                                return {
-                                    'name': project_name,
-                                    'path': project_root
-                                }
             composer.add('error', f'Project is not configured')
 
 configs = ConfigHandler()
