@@ -1,10 +1,8 @@
-from composer import composer
 from config_handler import configs
 from tasks._task import Task
 
 class ChangeEnv(Task):
-    @classmethod
-    def stage(cls, project_name=configs.current_project(), env=None):
+    def stage(self, project_name=configs.current_project(), env=None):
         project_configs = configs.project_configs(project_name)
         project_env = project_configs.get('env', {})
         if env == 'autoload':
@@ -17,4 +15,4 @@ class ChangeEnv(Task):
                     for env, vars in project_env.items() if env in environments
                     for var, val in vars.items() ]
 
-        composer.add('task', exports)
+        self.composer.add('task', exports)
