@@ -9,6 +9,10 @@ hop() {
         echo -e "$line"
       elif [[ "$directive" == '__hop_task__' ]]; then
         eval "$line"
+      elif [[ "$directive" == '__hop_warning__' ]]; then
+        local FONT_YELLOW='\033[0;33m'
+        local FONT_DEFAULT='\033[0m'
+        echo -e "${FONT_YELLOW}${line}${FONT_DEFAULT}"
       elif [[ "$directive" == '__hop_error__' ]]; then
         local FONT_RED='\033[0;31m'
         local FONT_DEFAULT='\033[0m'
