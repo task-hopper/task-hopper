@@ -1,0 +1,7 @@
+commands:
+  ex: echo "example command"
+env:
+  default:
+    HOP_EXAMPLE: default
+  local:
+    HOP_EXAMPLE: local
