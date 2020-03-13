@@ -32,13 +32,13 @@ class ConfigHandler:
                 config_path = apath(f'{project_root}/.hop')
                 if path.exists(config_path):
                     with open(config_path) as f:
-                        project_specific_config = {**yaml.load(f, Loader=yaml.FullLoader)}
+                        project_specific_config = yaml.load(f, Loader=yaml.FullLoader)
                         combined = mergedicts(project_global_config, project_specific_config)
                         return combined
                 else:
                     return project_global_config
             else:
-                composer.add('error', f'path is not configured for project {project}')
+                composer.add('error', f'path is not configured for project {project_name}')
         else:
             composer.add('error', f'Project is not configured')
 
