@@ -13,8 +13,6 @@ def run_hop_command(command, parsed_args):
 
 def main():
     commands = initialize_hop(composer=composer)
-    # print directive before showing help message
-    if sys.argv[-1] in ['-h', '--help']: print('__hop_message__')
 
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
@@ -22,7 +20,14 @@ def main():
     for alias, cls in commands.items():
         cls.setup_command(subparsers)
 
-    parsed_args = parser.parse_args(sys.argv[1:])
+    if len(sys.argv) == 1 or sys.argv[-1] in ['-h', '--help']:
+        # print directive before showing help message
+        print('__hop_message__')
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    parsed_args = parser.parse_args()
+
     run_hop_command(commands[parsed_args.subparser_name], parsed_args)
 
     # compose result
