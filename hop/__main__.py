@@ -23,6 +23,8 @@ def main():
     if len(sys.argv) == 1 or sys.argv[-1] in ['-h', '--help']:
         # print directive before showing help message
         print('__hop_message__')
+
+    if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
