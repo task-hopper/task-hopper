@@ -1,5 +1,5 @@
 from composer import composer
-from helpers.utils import apath, issubdir
+from helpers.utils import apath, issubdir, mergedicts
 from os import getcwd
 import os.path as path
 import yaml
@@ -21,21 +21,22 @@ class ConfigHandler:
         return current_project
 
     def project_configs(self, project_name=current_project):
-        project = (
+        project_global_config = (
             self.configs
             .get('projects', {})
             .get(project_name))
 
-        if project:
-            project_root = project.get('path')
+        if project_global_config:
+            project_root = project_global_config.get('path')
             if project_root:
                 config_path = apath(f'{project_root}/.hop')
                 if path.exists(config_path):
-                    project_override = { 'path': project_root }
                     with open(config_path) as f:
-                       return {**project_override, **yaml.load(f, Loader=yaml.FullLoader)}
+                        project_specific_config = {**yaml.load(f, Loader=yaml.FullLoader)}
+                        combined = mergedicts(project_global_config, project_specific_config)
+                        return combined
                 else:
-                    return project
+                    return project_global_config
             else:
                 composer.add('error', f'path is not configured for project {project}')
         else:
