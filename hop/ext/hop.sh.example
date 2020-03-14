@@ -46,4 +46,9 @@ _hop()
     esac
 }
 
+if [[ $(ps -p$$ -ocmd=) = "zsh" ]]; then
+  autoload bashcompinit
+  bashcompinit
+fi
+
 complete -F _hop hop
