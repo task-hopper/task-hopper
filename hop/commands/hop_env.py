@@ -7,7 +7,17 @@ class Env(HopCommand):
     def setup_command(self, subparsers):
         env_parser = subparsers.add_parser(
             'env', help="export specified environment's variables")
-        env_parser.add_argument('environment', help='the environment to get variables for')
+
+        env_parser.add_argument(
+            'environment', nargs='?', help='the environment to get variables for')
+
+        env_parser.add_argument(
+            '-l', '--list', help='list available environments for current',
+            action='store_const', const=True, dest='list_envs')
+
+        env_parser.add_argument(
+            '-v', '--verbose', help='verbosely change environment',
+            action='store_const', const=True, dest='verbose')
 
     def process_command(self, parsed_args):
-        self.push_task('ChangeEnv', env=parsed_args.environment)
+        self.push_task('ChangeEnv', env=parsed_args.environment, list_envs=parsed_args.list_envs, verbose=parsed_args.verbose)
