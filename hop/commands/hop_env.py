@@ -9,10 +9,10 @@ class Env(HopCommand):
             'env', help="export specified environment's variables")
 
         env_parser.add_argument(
-            'environment', nargs='?', help='the environment to get variables for')
+            'environment', nargs='?', help='the environment to set variables for')
 
         env_parser.add_argument(
-            '-l', '--list', help='list available environments for current',
+            '-l', '--list', help='list configured environments for current project',
             action='store_const', const=True, dest='list_envs')
 
         env_parser.add_argument(
