@@ -63,13 +63,13 @@ TODO
         env:
           default:
             ENV_VAR_A: '{{some_other_variable}}'  # need quotes because YAML will think you're trying to create a dictionary if you try to use { as the first character of a string
-          local:
+          local:  # this is the name that will be used with `hop env` as in `hop env local`
             ENV_VAR_B: 456
           autoload: local
       two:
         name: Project Two
         path: ~/projects/project-two
-  All projects must be configured in the global configuration file and be listed under `projects:`. You must at least specify an alias, name, and path for each project in the global configuration file. Any other configuration, such as commands or environment variables, can be set in either the global config or a .hop file located in the path specified for the project.
+  All projects must be configured in the global configuration file and be listed under `projects:`. You must at least specify an alias, name, and path for each project in the global configuration file. Any other configuration, such as custom commands or environment settings, can be set in either the global config or a .hop file located in the path specified for the project.
 
 ##### Example .hop file
     commands:
