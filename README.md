@@ -19,6 +19,8 @@ TODO
 
 #### Set environment variables for a given environment
     hop env <environment>
+      -l: list environments configured for current project
+      -v: verbosely change environment settings
 
 #### Create default configuration for a new project
     hop init

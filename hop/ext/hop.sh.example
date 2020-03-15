@@ -30,9 +30,9 @@ _hop()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts=$(hop -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
+      opts=$(hop -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
       COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
       return 0
     fi
@@ -41,6 +41,13 @@ _hop()
       to)
         local projects=$(hop list --no-color | cut -c 4- | sed -n '0,/^$/p')
         COMPREPLY=($(compgen -W "${projects}" -- ${cur}))
+        return 0
+        ;;
+
+      env)
+        local envs=$(hop env -l)
+        [[ $envs =~ "No environments configured" ]] && return 0
+        COMPREPLY=($(compgen -W "${envs}" -- ${cur}))
         return 0
         ;;
     esac
