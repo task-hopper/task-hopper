@@ -32,8 +32,8 @@ _hop()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-      opts=$(hop -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
-      COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+      hopcommands=$(hop -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
+      COMPREPLY=($(compgen -W "${hopcommands}" -- ${cur}))
       return 0
     fi
 
