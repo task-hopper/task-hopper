@@ -3,7 +3,10 @@
 A project management CLI that makes it easier to navigate and automate your project workflow.
 
 ## Installation
-TODO
+- clone repo
+- install dependencies
+- copy hop/ext/hop.sh.example to somewhere, remove the .example, and add a line like the following to your .bashrc (or other shell rc):
+    source $HOME/Projects/task-hopper/hop/ext/hop.sh
 
 ## Features
 - change directories
