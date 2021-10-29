@@ -3,6 +3,7 @@ class HopCommand(object):
         super().__init__()
         self.alias = alias
         self.composer = None
+        self.additional_args = []
 
     def import_composer(self, composer):
         self.composer = composer
