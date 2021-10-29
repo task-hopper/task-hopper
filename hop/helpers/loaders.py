@@ -1,7 +1,7 @@
 from commands._hop_command import HopCommand
 from tasks._task import Task
 from config_handler import configs
-from helpers.utils import apath
+from helpers.utils import apath, mergedicts
 from os.path import isdir
 import inspect
 import pkgutil
@@ -79,24 +79,32 @@ def load_commands(composer=None, tasks=None):
 # load configured commands
 def load_configured_commands(composer=None):
     cmds = {}
+
+    # get configuration
+    global_commands = configs.configs.get('commands', {})
     current_project = configs.current_project()
+    project_commands = {}
     if current_project:
-        config_commands = configs.project_configs(current_project).get('commands', {})
-        for a,c in config_commands.items():
-            command = HopCommand(alias=a)
-            help_msg = (c[:35] + '...') if len(c) > 35 else c
-            def new_setup_command(self, subparsers, a=a, help_msg=help_msg):
-                custom_parser = subparsers.add_parser(
-                    a, help=help_msg)
-                custom_parser.set_defaults(cmd='default')
+        project_commands = configs.project_configs(current_project).get('commands', {})
+    config_commands = mergedicts(global_commands, project_commands)
 
-            def new_process_command(self, parsed_args, c=c):
-                composer.add('task', c)
+    # build commands
+    for a, c in config_commands.items():
+        command = HopCommand(alias=a)
+        help_msg = (c[:35] + '...') if len(c) > 35 else c
 
-            command.setup_command = types.MethodType(new_setup_command, command)
-            command.process_command = types.MethodType(new_process_command, command)
+        def new_setup_command(self, subparsers, a=a, help_msg=help_msg):
+            custom_parser = subparsers.add_parser(
+                a, help=help_msg)
+            custom_parser.set_defaults(cmd='default')
 
-            cmds[a] = command
+        def new_process_command(self, parsed_args, c=c):
+            composer.add('task', c)
+
+        command.setup_command = types.MethodType(new_setup_command, command)
+        command.process_command = types.MethodType(new_process_command, command)
+
+        cmds[a] = command
 
     return cmds
 
