@@ -6,9 +6,12 @@ class HopCommand(object):
 
     def import_composer(self, composer):
         self.composer = composer
-    
+
     def bind_tasks(self, task_ref):
         self.task_ref = task_ref
+
+    def bind_carrot(self, carrot):
+        self.carrot = carrot
 
     def push_task(self, task, *args, **kwargs):
         self.task_ref[task].stage(*args, **kwargs)

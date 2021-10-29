@@ -23,6 +23,7 @@ def load_carrots(composer=None):
                 if 'Carrot' in [i.__name__ for i in c.__bases__]:
                     carrot =  {
                         'name': c.__name__,
+                        'cklass': c,
                         'klass': c(),
                         'tasks': {},
                         'commands': {}
@@ -38,6 +39,7 @@ def load_carrots(composer=None):
                         if 'HopCommand' in base_modules:
                             cmd_cls = c()
                             cmd_cls.import_composer(composer=composer)
+                            cmd_cls.bind_carrot(carrot=carrot['klass'])
                             carrot['commands'][cmd_cls.alias] = cmd_cls
             bunch[carrot['name']] = carrot
 

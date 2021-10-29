@@ -8,4 +8,5 @@ class Task():
 
     @classmethod
     def patch(self, func):
+        self._stage = self.stage
         self.stage = func

@@ -52,5 +52,7 @@ class ConfigHandler:
         else:
             composer.add('error', f'Project is not configured')
 
+    def carrot_configs(self, carrot_name):
+        return self.configs.get('carrots', {}).get(carrot_name, {})
 
 configs = ConfigHandler()

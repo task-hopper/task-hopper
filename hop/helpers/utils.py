@@ -1,4 +1,5 @@
 from os.path import expanduser
+from re import sub
 import collections.abc
 
 def apath(path):
@@ -6,7 +7,7 @@ def apath(path):
 
 # check if check_dir is the same directory or a subdirectory of ref_dir
 # set allow_match to false if you want to check if only a subdirectory and not same 
-# TODO find a better solution or us os.path to make sure paths also exist
+# TODO find a better solution or use os.path to make sure paths also exist
 def issubdir(check_dir, ref_dir, allow_match = True):
     if allow_match:
         return (f'{check_dir}/' == f'{ref_dir}/') or (check_dir.startswith(f'{ref_dir}/'))
@@ -20,3 +21,6 @@ def mergedicts(dict1, dict2):
         else:
             dict1[k] = v
     return dict1
+
+def camel_to_snake(str):
+   return sub(r'(?<!^)(?=[A-Z])', '_', str).lower()
