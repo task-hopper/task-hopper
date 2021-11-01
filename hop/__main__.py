@@ -8,7 +8,8 @@ import sys
 
 sys.path.append(apath('~/repos/personal/task-hopper'))
 
-def run_hop_command(command, parsed_args):
+def run_hop_command(command, parsed_args, additional_args):
+    command.additional_args = additional_args
     command.process_command(parsed_args)
 
 def main():
@@ -28,9 +29,9 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    parsed_args = parser.parse_args()
+    parsed_args = parser.parse_known_args()
 
-    run_hop_command(commands[parsed_args.subparser_name], parsed_args)
+    run_hop_command(commands[parsed_args[0].subparser_name], parsed_args[0], parsed_args[1])
 
     # compose result
     composer.compose()

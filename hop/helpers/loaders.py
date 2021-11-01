@@ -2,13 +2,13 @@ from commands._hop_command import HopCommand
 from tasks._task import Task
 from config_handler import configs
 from helpers.utils import apath, mergedicts
-from os.path import isdir
 import inspect
 import pkgutil
 import sys
 import types
 
 sys.path.append(apath('~/.hop/lib'))
+
 
 def load_carrots(composer=None):
     bunch = {}
@@ -21,7 +21,7 @@ def load_carrots(composer=None):
             carrot = None
             for (_, c) in carrot_members:
                 if 'Carrot' in [i.__name__ for i in c.__bases__]:
-                    carrot =  {
+                    carrot = {
                         'name': c.__name__,
                         'klass': c(),
                         'tasks': {},
@@ -96,10 +96,12 @@ def load_configured_commands(composer=None):
         def new_setup_command(self, subparsers, a=a, help_msg=help_msg):
             custom_parser = subparsers.add_parser(
                 a, help=help_msg)
+            #  custom_parser.add_argument('cmd_args', nargs=REMAINDER)
             custom_parser.set_defaults(cmd='default')
 
         def new_process_command(self, parsed_args, c=c):
-            composer.add('task', c)
+            cmd_args = ' '.join(self.additional_args)
+            composer.add('task', f'{c} {cmd_args}')
 
         command.setup_command = types.MethodType(new_setup_command, command)
         command.process_command = types.MethodType(new_process_command, command)
