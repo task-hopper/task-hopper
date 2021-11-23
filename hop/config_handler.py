@@ -1,9 +1,10 @@
-from composer import composer
-from helpers.utils import apath, issubdir, mergedicts
-from os import getcwd
+import os
 import os.path as path
 import yaml
 import jinja2
+
+from composer import composer
+from helpers.utils import apath, issubdir, mergedicts, snake_case
 
 
 class ConfigHandler:
@@ -24,12 +25,21 @@ class ConfigHandler:
     def current_project(self):
         current_project = None
         project_paths = {k: apath(v['path']).rstrip('/') for k, v in self.configs.get('projects', {}).items()}
-        current_path = getcwd()
+        current_path = os.getcwd()
         for project, project_path in project_paths.items():
             if issubdir(current_path, project_path):
                 current_project = project
 
         return current_project
+
+    def current_env(self):
+        project = self.current_project()
+        if project:
+            formatted_project_name = snake_case(project).upper()
+            env_var = f'HOP_ENV_{formatted_project_name}'
+            return os.getenv(env_var, None)
+
+        return None
 
     def project_configs(self, project_name=current_project):
         project_global_config = (
