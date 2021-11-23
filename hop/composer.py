@@ -1,3 +1,4 @@
+import os
 import sys
 
 class Composer:
@@ -16,6 +17,8 @@ class Composer:
         if dtype == 'error': self.compose()
 
     def compose(self):
+        if os.getenv('HOP_DEBUG', None) == 'True':
+            print("\n__HOP_END_DEBUG__")
         for item in self.composition:
             print(item)
         sys.exit()

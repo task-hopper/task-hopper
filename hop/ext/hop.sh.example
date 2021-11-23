@@ -1,5 +1,4 @@
 hop() {
-  local cmd_result=()
   local directive=''
   while IFS= read -r line ; do
     if [[ "$line" =~ ^_{2}hop_{1}[A-Za-z]*_{2}$ ]]; then
@@ -21,7 +20,42 @@ hop() {
         echo -e 'Invalid command directive'
       fi
     fi
-  done < <(python /home/crank/repos/personal/task-hopper/hop $@)
+  done < <(/home/crank/.hop/venv/bin/python /home/crank/repos/personal/task-hopper/hop $@)
+}
+
+hopd() {
+  echo "===== DEBUGGING ====="
+  HOP_DEBUG=True /home/crank/.hop/venv/bin/python /home/crank/repos/personal/task-hopper/hop $@ | tee ~/.hop/debug_output.tmp
+  echo "====================="
+  local composition=()
+  local directive=''
+  local end_debug=false
+  while IFS= read -r line ; do
+    if [[ "$end_debug" = true ]]; then
+      if [[ "$line" =~ ^_{2}hop_{1}[A-Za-z]*_{2}$ ]]; then
+        directive="$line"
+      else
+        if [[ "$directive" == '__hop_message__' ]]; then
+          echo -e "$line"
+        elif [[ "$directive" == '__hop_task__' ]]; then
+          eval "$line" <&1
+        elif [[ "$directive" == '__hop_warning__' ]]; then
+          local FONT_YELLOW='\033[0;33m'
+          local FONT_DEFAULT='\033[0m'
+          echo -e "${FONT_YELLOW}${line}${FONT_DEFAULT}"
+        elif [[ "$directive" == '__hop_error__' ]]; then
+          local FONT_RED='\033[0;31m'
+          local FONT_DEFAULT='\033[0m'
+          echo -e "${FONT_RED}${line}${FONT_DEFAULT}"
+        else
+          echo -e 'Invalid command directive'
+        fi
+      fi
+    fi
+    if [[ "$line" == '__HOP_END_DEBUG__' ]]; then
+      end_debug=true
+    fi
+  done < ~/.hop/debug_output.tmp
 }
 
 _hop()
@@ -59,3 +93,4 @@ if [[ $(ps -p$$ -ocmd=) = "zsh" ]]; then
 fi
 
 complete -F _hop hop
+
