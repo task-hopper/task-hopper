@@ -3,11 +3,12 @@ from tasks._task import Task
 from helpers.utils import snake_case
 
 class ChangeEnv(Task):
-    def stage(self, project_name=configs.current_project(), env=None, list_envs=False, verbose=False):
+    def stage(self, project_name=configs.current_project(), env=None, action='set', verbose=False):
         project_configs = configs.project_configs(project_name)
         project_env = project_configs.get('env', {})
+        formatted_project_name = snake_case(project_name).upper()
 
-        if list_envs:
+        if action == 'list':
             available_envs = [e for e in project_env if e not in ['default', 'autoload']]
 
             if len(available_envs) > 0:
@@ -16,20 +17,27 @@ class ChangeEnv(Task):
             else:
                 self.composer.add('warning', 'No environments configured for current project')
 
-        elif env is not None:
-            environments = ['default']
-
-            # unset the previous environment's env vars before continuing
+        if action == 'unset':
             current_env = configs.current_env()
             if current_env:
-                unsets = [ f'unset {var}' for var in project_env.get(current_env).keys() ]
+                current_env_unsets = [ f'unset {var}' for var in project_env.get(current_env).keys() ]
+                default_env_unsets = [ f'unset {var}' for var in project_env.get('default').keys() ]
+                unsets = [ *current_env_unsets, *default_env_unsets ]
+
+                if verbose: self.composer.add('message', unsets)
+
                 self.composer.add('task', unsets)
+                self.composer.add('task', f'unset HOP_ENV_{formatted_project_name}')
+
+        if action == 'set':
+            if env is None: self.composer.add('error', 'No environment specified')
+
+            environments = ['default']
 
             # autoload environment if specified and set the current environment env var.
             if env == 'autoload':
                 autoload_env = project_env.get('autoload')
 
-                formatted_project_name = snake_case(project_name).upper()
                 self.composer.add('task', f'export HOP_ENV_{formatted_project_name}="{autoload_env}"')
 
                 if autoload_env: environments.append(autoload_env)
@@ -49,6 +57,3 @@ class ChangeEnv(Task):
             if verbose: self.composer.add('message', exports)
 
             self.composer.add('task', exports)
-
-        else:
-            self.composer.add('error', 'No options specified')

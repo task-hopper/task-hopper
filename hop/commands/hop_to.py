@@ -14,6 +14,8 @@ class To(HopCommand):
             'destination', help='specify project')
 
     def process_command(self, parsed_args):
+        # Unset the current project env vars before going to destination project
+        self.push_task('ChangeEnv', action='unset')
         # prompt cd
         self.push_task('CD', project_name=parsed_args.destination)
         # export configured environment variables if autoload is enabled
