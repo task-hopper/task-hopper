@@ -1,4 +1,6 @@
 from ._hop_command import HopCommand
+from hop.helpers.argparse_actions.store_value_and_task_action import StoreValueAndTaskAction
+
 
 class Env(HopCommand):
     def __init__(self):
@@ -8,16 +10,23 @@ class Env(HopCommand):
         env_parser = subparsers.add_parser(
             'env', help="export specified environment's variables")
 
-        env_parser.add_argument(
-            'environment', nargs='?', help='the environment to set variables for')
+        group = env_parser.add_mutually_exclusive_group(required=True)
 
-        env_parser.add_argument(
+        group.add_argument(
+            'environment', nargs='?', action=StoreValueAndTaskAction, task_action='set')
+
+        group.add_argument(
             '-l', '--list', help='list configured environments for current project',
-            action='store_const', const=True, dest='list_envs')
+            action='store_const', const='list', dest='task_action')
+
+        group.add_argument(
+            '-u', '--unset', help='unsets the configured env vars for current project',
+            action='store_const', const='unset', dest='task_action')
 
         env_parser.add_argument(
             '-v', '--verbose', help='verbosely change environment',
             action='store_const', const=True, dest='verbose')
 
     def process_command(self, parsed_args):
-        self.push_task('ChangeEnv', env=parsed_args.environment, list_envs=parsed_args.list_envs, verbose=parsed_args.verbose)
+        self.push_task('ChangeEnv', action='unset', verbose=parsed_args.verbose)
+        self.push_task('ChangeEnv', env=parsed_args.environment, action=parsed_args.task_action, verbose=parsed_args.verbose)
