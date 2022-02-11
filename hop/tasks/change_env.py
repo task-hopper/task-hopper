@@ -20,8 +20,8 @@ class ChangeEnv(Task):
         if action == 'unset':
             current_env = configs.current_env()
             if current_env:
-                current_env_unsets = [ f'unset {var}' for var in project_env.get(current_env).keys() ]
-                default_env_unsets = [ f'unset {var}' for var in project_env.get('default').keys() ]
+                current_env_unsets = [ f'unset {var}' for var in project_env.get(current_env, {}).keys() ]
+                default_env_unsets = [ f'unset {var}' for var in project_env.get('default', {}).keys() ]
                 unsets = [ *current_env_unsets, *default_env_unsets ]
 
                 if verbose: self.composer.add('message', unsets)
