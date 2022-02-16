@@ -19,6 +19,7 @@ A project management CLI that makes it easier to navigate and automate your proj
 ## Core Commands
 #### `cd` to project's root directory, set default environment variables, and run commands if configured
     hop to <project_alias>
+      -v: verbosely change directory, showing commands that are being run if autorun commands are configured
 
 #### Set environment variables for a given environment
     hop env <environment>
