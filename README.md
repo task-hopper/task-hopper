@@ -17,7 +17,7 @@ A project management CLI that makes it easier to navigate and automate your proj
 - life cycle hooks
 
 ## Core Commands
-#### `cd` to project's root directory and set default environment variables if configured
+#### `cd` to project's root directory, set default environment variables, and run commands if configured
     hop to <project_alias>
 
 #### Set environment variables for a given environment
@@ -62,6 +62,8 @@ A project management CLI that makes it easier to navigate and automate your proj
       one:  # this is the alias
         name: Project One
         path: ~/projects/project-one
+        autorun:
+          - nvm use  # run nvm use immediately after cd'ing to the project and setting environment variables
         commands:
           run: yarn start
           number_please: echo {{some_variable}}
@@ -77,6 +79,8 @@ A project management CLI that makes it easier to navigate and automate your proj
   All projects must be configured in the global configuration file and be listed under `projects:`. You must at least specify an alias, name, and path for each project in the global configuration file. Any other configuration, such as custom commands or environment settings, can be set in either the global config or a .hop file located in the path specified for the project.
 
 ##### Example .hop file
+    autorun:
+        - echo "Hopped to my project"
     commands:
       run: rails s -p 1234
       example-command: echo {{env.dev.VAR}}
