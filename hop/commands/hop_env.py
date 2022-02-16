@@ -1,5 +1,5 @@
 from ._hop_command import HopCommand
-from hop.helpers.argparse_actions.store_value_and_task_action import StoreValueAndTaskAction
+from helpers.argparse_actions.store_value_and_task_action import StoreValueAndTaskAction
 
 
 class Env(HopCommand):
