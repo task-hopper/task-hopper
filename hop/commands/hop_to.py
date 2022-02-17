@@ -18,6 +18,10 @@ class To(HopCommand):
             '-v', '--verbose', help='verbosely change directory',
             action='store_const', const=True, dest='verbose')
 
+        to_parser.add_argument(
+            '-d', '--no-autorun', help='do not run autorun commands, only cd to the project and set env vars',
+            action='store_const', const=True, dest='no_autorun')
+
     def process_command(self, parsed_args):
         # Unset the current project env vars before going to destination project
         if configs.current_project():
@@ -29,5 +33,6 @@ class To(HopCommand):
         # export configured environment variables if autoload is enabled
         self.push_task('ChangeEnv', project_name=parsed_args.destination, env='autoload')
 
-        # run user-defined shell commands upon switching to a project if configured
-        self.push_task('AutoRun', project_name=parsed_args.destination, verbose=parsed_args.verbose)
+        if not parsed_args.no_autorun:
+            # run user-defined shell commands upon switching to a project if configured
+            self.push_task('AutoRun', project_name=parsed_args.destination, verbose=parsed_args.verbose)

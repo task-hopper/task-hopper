@@ -20,6 +20,7 @@ A project management CLI that makes it easier to navigate and automate your proj
 #### `cd` to project's root directory, set default environment variables, and run commands if configured
     hop to <project_alias>
       -v: verbosely change directory, showing commands that are being run if autorun commands are configured
+      -d: do not run autorun commands, only cd to the project and set env vars
 
 #### Set environment variables for a given environment
     hop env <environment>
@@ -63,8 +64,9 @@ A project management CLI that makes it easier to navigate and automate your proj
       one:  # this is the alias
         name: Project One
         path: ~/projects/project-one
-        autorun:
-          - nvm use  # run nvm use immediately after cd'ing to the project and setting environment variables
+        autorun:  # run git pull and nvm use immediately after cd'ing to the project and setting environment variables
+          - git pull
+          - nvm use
         commands:
           run: yarn start
           number_please: echo {{some_variable}}
