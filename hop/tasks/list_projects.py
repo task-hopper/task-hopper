@@ -11,8 +11,8 @@ class ListProjects(Task):
         sorted_list = sorted(project_list)
 
         use_color = not no_color
-        begin_color = '\e[32m'
-        end_color = '\e[0m'
+        begin_color = '\033[0;32m'
+        end_color = '\033[0m'
 
         colored_list = [f'{"=>" if item == current_project else "  "} {begin_color if use_color else ""}{item}{end_color if use_color else ""}' for item in sorted_list]
 
