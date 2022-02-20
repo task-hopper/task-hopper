@@ -4,7 +4,7 @@ from tasks._task import Task
 
 class ListProjects(Task):
     def stage(self, no_color=False):
-        all_projects = configs.configs.get('projects')
+        all_projects = configs.configs.get('projects', {})
         current_project = configs.current_project()
 
         project_list = [name for name, config in all_projects.items()]
