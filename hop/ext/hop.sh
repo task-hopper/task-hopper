@@ -1,3 +1,5 @@
+#!/bin/bash
+
 hop() {
   local directive=''
   while IFS= read -r line ; do
@@ -20,12 +22,12 @@ hop() {
         echo -e 'Invalid command directive'
       fi
     fi
-  done < <(/home/crank/.hop/venv/bin/python /home/crank/repos/personal/task-hopper/hop $@)
+  done < <(python3 $HOP_DIR/hop $@)
 }
 
 hopd() {
   echo "===== DEBUGGING ====="
-  HOP_DEBUG=True /home/crank/.hop/venv/bin/python /home/crank/repos/personal/task-hopper/hop $@ | tee ~/.hop/debug_output.tmp
+  HOP_DEBUG=True python3 $HOP_DIR/hop $@ | tee $HOP_DIR/debug_output.tmp
   echo "====================="
   local composition=()
   local directive=''
@@ -55,7 +57,7 @@ hopd() {
     if [[ "$line" == '__HOP_END_DEBUG__' ]]; then
       end_debug=true
     fi
-  done < ~/.hop/debug_output.tmp
+  done < $HOP_DIR/debug_output.tmp
 }
 
 _hop()
@@ -87,10 +89,9 @@ _hop()
     esac
 }
 
-if [[ $(ps -p$$ -ocmd=) = "zsh" ]]; then
+if test -n "$ZSH_VERSION"; then
   autoload bashcompinit
   bashcompinit
 fi
 
 complete -F _hop hop
-
