@@ -9,6 +9,7 @@
 # - allow user to change install dir via command line argument
 # - auto detect best shell rc file
 # - allow user to change shell rc file via command line argument
+# - probably use different temp name than "master.zip" when curl'ing the repo
 
 
 INSTALL_DIR=$HOME/.hop
@@ -37,8 +38,8 @@ done
 
 # download task-hopper repo
 curl --location --remote-name https://github.com/task-hopper/task-hopper/archive/master.zip
-unzip task-hopper-master.zip -d $INSTALL_DIR
-rm -f task-hopper-master.zip
+unzip master.zip -d $INSTALL_DIR
+rm -f master.zip
 
 # add necessary environment variables / setup to user's shell configuration (.bashrc etc)
 EXPORT_COMMAND="export HOP_DIR=\"$INSTALL_DIR\""
