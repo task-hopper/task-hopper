@@ -11,7 +11,7 @@
 # - allow user to change shell rc file via command line argument
 
 
-INSTALL_DIR=\$HOME/.hop
+INSTALL_DIR=$HOME/.hop
 
 SHELL_RC_FILE=$HOME/.bash_profile
 
