@@ -36,9 +36,9 @@ for req in "${REQUIRED_PYTHON_PACKAGES[@]}"; do
 done
 
 # download task-hopper repo
-curl --location --remote-header-name --remote-name https://github.com/task-hopper/task-hopper/archive/master.zip --output $INSTALL_DIR.zip
-unzip $INSTALL_DIR.zip -d $INSTALL_DIR
-rm -f $INSTALL_DIR.zip
+curl --location --remote-header-name --remote-name https://github.com/task-hopper/task-hopper/archive/master.zip
+unzip task-hopper-master.zip -d $INSTALL_DIR
+rm -f task-hopper-master.zip
 
 # add necessary environment variables / setup to user's shell configuration (.bashrc etc)
 EXPORT_COMMAND="export HOP_DIR=\"$INSTALL_DIR\""
