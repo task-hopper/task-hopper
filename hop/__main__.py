@@ -18,8 +18,11 @@ def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
 
-    for alias, cls in commands.items():
+    for alias, cls in sorted(commands.items()):
         cls.setup_command(subparsers)
+
+        if len(sys.argv) > 1 and alias.startswith(sys.argv[1]):
+            sys.argv[1] = alias
 
     if len(sys.argv) == 1 or sys.argv[-1] in ['-h', '--help']:
         # print directive before showing help message
