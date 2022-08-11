@@ -3,6 +3,8 @@ from helpers.utils import apath
 from tasks._task import Task
 import os.path as path
 
+# TODO
+#  from helpers.colors import bash_colors
 
 class EditConfig(Task):
     def stage(self, project_name=None, edit_global=False):
@@ -22,13 +24,14 @@ class EditConfig(Task):
             else:
                 self.composer.add('message', [
                     f'No .hop file is present in project {project_name}. Your options are:',
-                    '',
-                    f' \e[32m$\e[0m hop to {project_name}',
-                    f' \e[32m$\e[0m hop init --create-hop-file',
-                    '',
+                    '\033[0;32m',
+                    f'  hop to {project_name}',
+                    f'  hop init --create-hop-file',
+                    '\033[0m',
                     'or you can edit the global config file with:',
-                    '',
-                    ' \e[32m$\e[0m hop edit -g'
+                    '\033[0;32m',
+                    '  hop edit -g',
+                    '\033[0m'
                 ])
                 return
 

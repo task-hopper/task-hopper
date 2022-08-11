@@ -39,7 +39,7 @@ class InitConfig(Task):
     name: {name}
     path: {directory}"""
 
-            self.composer.add('message', f'\e[32mAdding new project {name} to ~/.hoprc\e[0m')
+            self.composer.add('message', f'\033[0;32mAdding new project {name} to ~/.hoprc\033[0;32m')
             with open(apath('~/.hoprc'), 'a+') as f:
                 f.write(basic_config)
 
@@ -50,7 +50,7 @@ class InitConfig(Task):
                 self.composer.add('warning', f'.hop file already exists in {directory}')
 
             else:
-                self.composer.add('message', f'\e[32mCreating .hop file in {directory}')
+                self.composer.add('message', f'\033[0;32mCreating .hop file in {directory}')
 
                 example_hop_file = path.join(sys.argv[0], 'ext/.hop.example')
                 shutil.copy(example_hop_file, hop_file_destination)

@@ -13,6 +13,8 @@ class ConfigHandler:
         self.configs = self.load_config(apath('~/.hoprc'))
 
     def load_config(self, yaml_file):
+        if not path.exists(yaml_file): return {}
+
         with open(yaml_file) as f:
             config_map = yaml.safe_load(f)
 
