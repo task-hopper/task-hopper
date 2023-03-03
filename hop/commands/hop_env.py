@@ -20,6 +20,10 @@ class Env(HopCommand):
             action='store_const', const='list', dest='task_action')
 
         group.add_argument(
+            '-s', '--show', help='Display current environment variables',
+            action='store_const', const='show', dest='task_action')
+
+        group.add_argument(
             '-u', '--unset', help='unsets the configured env vars for current project',
             action='store_const', const='unset', dest='task_action')
 

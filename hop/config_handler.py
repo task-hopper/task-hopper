@@ -12,6 +12,9 @@ class ConfigHandler:
         self.configs = {}
         self.configs = self.load_config(apath('~/.hoprc'))
 
+    def get(self, attr, default=None):
+        return self.configs.get(attr, default)
+
     def load_config(self, yaml_file):
         with open(yaml_file) as f:
             config_map = yaml.safe_load(f)
