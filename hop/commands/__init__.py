@@ -1,4 +1,4 @@
-class HopCommand(object):
+class Command(object):
     def __init__(self, alias=None):
         super().__init__()
         self.alias = alias
@@ -7,7 +7,7 @@ class HopCommand(object):
 
     def import_composer(self, composer):
         self.composer = composer
-    
+
     def bind_tasks(self, task_ref):
         self.task_ref = task_ref
 

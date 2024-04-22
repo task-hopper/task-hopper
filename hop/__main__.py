@@ -2,13 +2,10 @@
 
 from composer import composer
 from helpers.loaders import initialize_hop
-from helpers.utils import apath
 import argparse
 import sys
 
-sys.path.append(apath('~/repos/personal/task-hopper'))
-
-def run_hop_command(command, parsed_args, additional_args):
+def run_command(command, parsed_args, additional_args):
     command.additional_args = additional_args
     command.process_command(parsed_args)
 
@@ -18,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
 
-    for alias, cls in commands.items():
+    for _, cls in commands.items():
         cls.setup_command(subparsers)
 
     if len(sys.argv) == 1 or sys.argv[-1] in ['-h', '--help']:
@@ -31,11 +28,10 @@ def main():
 
     parsed_args = parser.parse_known_args()
 
-    run_hop_command(commands[parsed_args[0].subparser_name], parsed_args[0], parsed_args[1])
+    run_command(commands[parsed_args[0].subparser_name], parsed_args[0], parsed_args[1])
 
     # compose result
     composer.compose()
 
 if __name__ == '__main__':
     main()
-
