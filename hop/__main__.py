@@ -3,25 +3,34 @@
 from composer import composer
 from helpers.loaders import initialize_hop
 import argparse
-import sys
+from io import StringIO
+
+
+class HopParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.composer = composer
+
+    def print_help(self):
+        msg_io = StringIO()
+        super().print_help(msg_io)
+        composer.add('message', msg_io.getvalue())
+        composer.compose()
+
 
 def run_command(command, parsed_args, additional_args):
     command.additional_args = additional_args
     command.process_command(parsed_args)
 
+
 def main():
     # Setup up parser
-    parser = argparse.ArgumentParser()
+    #  parser = argparse.ArgumentParser()
+    parser = HopParser()
     subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
 
     # Initialize commands
     commands = initialize_hop(composer=composer, subparsers=subparsers)
-
-    # Handle -h or --help 
-    if len(sys.argv) == 1 or sys.argv[-1] in ['-h', '--help']:
-        print('__hop_message__')
-        parser.print_help(sys.stderr)
-        sys.exit(1)
 
     # Parse args and run command
     parsed_args = parser.parse_known_args()
