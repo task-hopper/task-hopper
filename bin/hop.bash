@@ -46,6 +46,12 @@ hop3() {
   esac
 }
 
+
+hop3d() {
+  ${HOP_VENV}/bin/python ${HOP_REPO}/hop $@
+}
+
+
 _hop3()
 {
     local cur prev opts

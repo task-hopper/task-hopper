@@ -22,7 +22,7 @@ def load_tasks(composer=None):
 
 
 # load core hop commands
-def load_commands(composer=None, tasks=None):
+def load_core_commands(*, composer, tasks, subparsers):
     cmds = {}
     imported_package = __import__('commands', fromlist=['devnull'])
     for _, command_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + '.'):
@@ -32,15 +32,18 @@ def load_commands(composer=None, tasks=None):
             for (_, c) in cls_members:
                 if issubclass(c, Command) & (c is not Command):
                     cmd_cls = c()
-                    cmd_cls.import_composer(composer=composer)
-                    cmd_cls.bind_tasks(tasks)
+                    cmd_cls._bootstrap(
+                        composer=composer,
+                        tasks=tasks,
+                        subparsers=subparsers
+                    )
                     cmds[cmd_cls.alias] = cmd_cls
 
     return cmds
 
 
 # load configured commands
-def load_configured_commands(composer=None):
+def load_configured_commands(*, composer, subparsers):
     cmds = {}
 
     # get configuration
@@ -53,29 +56,29 @@ def load_configured_commands(composer=None):
 
     # build commands
     for a, c in config_commands.items():
-        command = Command(alias=a)
         help_msg = (c[:35] + '...') if len(c) > 35 else c
-
-        def new_setup_command(_, subparsers, a=a, help_msg=help_msg):
-            custom_parser = subparsers.add_parser(
-                a, help=help_msg)
-            #  custom_parser.add_argument('cmd_args', nargs=REMAINDER)
-            custom_parser.set_defaults(cmd='default')
+        command = Command(alias=a, hhelp=help_msg)
 
         def new_process_command(self, _, c=c):
             cmd_args = ' '.join(self.additional_args)
             composer.add('task', f'{c} {cmd_args}')
 
-        command.setup_command = types.MethodType(new_setup_command, command)
         command.process_command = types.MethodType(new_process_command, command)
 
+        command._bootstrap(composer=composer, subparsers=subparsers)
         cmds[a] = command
 
     return cmds
 
 # load hop
-def initialize_hop(composer=None):
+def initialize_hop(composer=None, subparsers=None):
     tasks = load_tasks(composer=composer)
-    commands = load_commands(composer=composer, tasks=tasks)
+    core_commands = load_core_commands(composer=composer, tasks=tasks, subparsers=subparsers)
+    configured_commands = load_configured_commands(composer=composer, subparsers=subparsers)
 
-    return {**commands, **load_configured_commands(composer=composer)}
+    commands = {**core_commands, **configured_commands}
+
+    for _, cls in commands.items():
+        cls.setup_command()
+
+    return commands
