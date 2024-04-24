@@ -10,14 +10,14 @@ hop() {
   case "$1" in
     init)
       if [ "$?" -eq 0 ]; then
-        ~/repos/personal/task-hopper-two/bin/init.sh $2
+        $HOP_REPO/bin/init.sh $2
       fi
       ;;
     healthcheck)
-      ~/repos/personal/task-hopper-two/bin/healthcheck.sh
+      $HOP_$REPO/bin/healthcheck.sh
       ;;
     *)
-      ~/repos/personal/task-hopper-two/bin/healthcheck.sh -s
+      $HOP_REPO/bin/healthcheck.sh -s
       if [ "$?" -eq 0 ]; then
         # Read the python composition into an array
         lines=()

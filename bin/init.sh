@@ -53,7 +53,7 @@ initialize_hop() {
   $HOP_VENV/bin/pip install -r "${HOP_REPO}/requirements.txt"
 }
 
-~/repos/personal/task-hopper-two/bin/healthcheck.sh -s
+$HOP_REPO/bin/healthcheck.sh -s
 HEALTHCHECK_STATUS="$?"
 
 if [ "$HEALTHCHECK_STATUS" -eq 1 ] || [ "$1" = "-f" ]; then
