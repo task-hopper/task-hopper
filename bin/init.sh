@@ -4,9 +4,11 @@
 # Variables #
 #############
 # Colors
-RED="\033[1;31m"
-GREEN="\033[1;32m"
+COLOR_RED="\033[1;31m"
 COLOR_RESET="\033[0m"
+
+# Locations
+CARROT_DIR="${HOME}/.hop2/carrots"
 
 # Python
 if [ -n "$HOP_SYS_PY" ]; then
@@ -17,26 +19,36 @@ fi
 
 
 initialize_hop() {
-  # 1. Check that python 3 is available
+  # 1. Remove existing carrots
+  if [ -d "${CARROT_DIR}" ]; then
+    echo 'Purging installed carrots...'
+    rm -rf "${CARROT_DIR}"
+  fi
+
+  # 1. Create required directories
+  echo 'Seeting up required directories...'
+  mkdir -p "$CARROT_DIR"
+
+  # 2. Check that python 3 is available
   if ! command -v $HOP_PY &>/dev/null; then
-    echo -e "${RED}✘ Python 3 is required but is not available.${COLOR_RESET}"
+    echo -e "${COLOR_RED}✘ Python 3 is required but is not available.${COLOR_RESET}"
     exit 1
   else
     echo 'Initializing task-hopper...'
   fi
 
-  # 2. delete existing venv if it exists
-  if [ ! d "${HOP_VENV}" ]; then
+  # 3. delete existing venv if it exists
+  if [ -d "${HOP_VENV}" ]; then
     echo 'Removing previous virtual environment...'
     rm -r $HOP_VENV &>/dev/null
   fi
 
 
-  # 3. Create a new virtual environment
+  # 4. Create a new virtual environment
   echo 'Setting up new virtual environment...'
   $HOP_PY -m venv $HOP_VENV
 
-  # 4. Install Python dependencies from requirements.txt
+  # 5. Install Python dependencies from requirements.txt
   echo 'Installing python dependencies...'
   $HOP_VENV/bin/pip install -r "${HOP_REPO}/requirements.txt"
 }

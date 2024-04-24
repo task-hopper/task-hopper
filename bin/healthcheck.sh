@@ -6,8 +6,8 @@
 ##############
 
 # Colors
-RED="\033[1;31m"
-GREEN="\033[1;32m"
+COLOR_RED="\033[1;31m"
+COLOR_GREEN="\033[1;32m"
 COLOR_RESET="\033[0m"
 
 # Status
@@ -20,9 +20,9 @@ HEALTHCHECKS=()
 
 print_message() {
   if [ "${1:0:1}" = "✘" ]; then
-    COLOR=${RED}
+    COLOR=${COLOR_RED}
   elif [ "${1:0:1}" = "✔" ]; then
-    COLOR=${GREEN}
+    COLOR=${COLOR_GREEN}
   fi
 
   echo -e "${COLOR}${1}${COLOR_RESET}"

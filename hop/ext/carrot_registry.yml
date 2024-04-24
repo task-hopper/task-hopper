@@ -1,0 +1,5 @@
+project_manager:
+  type: official
+  repo: https://github.com/task-hopper/task-hopper
+  versions:
+    - 1.0.0

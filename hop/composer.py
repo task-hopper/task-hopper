@@ -1,4 +1,3 @@
-import os
 import sys
 
 class Composer:
@@ -7,18 +6,19 @@ class Composer:
 
     def add(self, dtype, items):
         directive = {
-            'message': '__hop_message__',
-            'task': '__hop_task__',
-            'warning': '__hop_warning__',
+            'eval': '__hop_eval__',
+            'bash': '__hop_bash__',
+            'python': '__hop_python__',
+            'info': '__hop_info__',
+            'warn': '__hop_warn__',
             'error': '__hop_error__'
         }[dtype]
-        result = items if isinstance(items, list) else [items]
-        self.composition.extend([directive, *result])
+        # TODO: revisit the list vs single
+        items = items if isinstance(items, list) else [items]
+        self.composition.extend([directive, *items])
         if dtype == 'error': self.compose()
 
     def compose(self):
-        if os.getenv('HOP_DEBUG', None) == 'True':
-            print("\n__HOP_END_DEBUG__")
         for item in self.composition:
             print(item)
         sys.exit()

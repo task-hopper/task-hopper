@@ -19,28 +19,40 @@ hop3() {
     *)
       ~/repos/personal/task-hopper-two/bin/healthcheck.sh -s
       if [ "$?" -eq 0 ]; then
+        # Read the python composition into an array
+        lines=()
+        while IFS= read -r line; do
+          lines+=("$line")
+        done < <(${HOP_VENV}/bin/python ${HOP_REPO}/hop "$@")
+
+        local COLOR_YELLOW='\033[0;33m'
+        local COLOR_RED='\033[0;31m'
+        local COLOR_RESET='\033[0m'
+
         local directive=''
-        while IFS= read -r line ; do
+        for line in "${lines[@]}"; do
           if [[ "$line" =~ ^_{2}hop_{1}[A-Za-z]*_{2}$ ]]; then
             directive="$line"
           else
-            if [[ "$directive" == '__hop_message__' ]]; then
-              echo -e "$line"
-            elif [[ "$directive" == '__hop_task__' ]]; then
+            if [[ "$directive" == '__hop_eval__' ]]; then
               eval "$line" <&1
-            elif [[ "$directive" == '__hop_warning__' ]]; then
-              local FONT_YELLOW='\033[0;33m'
-              local FONT_DEFAULT='\033[0m'
-              echo -e "${FONT_YELLOW}${line}${FONT_DEFAULT}"
+            elif [[ "$directive" == '__hop_bash__' ]]; then
+              $line
+            elif [[ "$directive" == '__hop_python__' ]]; then
+              ${HOP_VENV}/bin/python ${HOP_REPO}/hop "th_callback" "$line"
+            elif [[ "$directive" == '__hop_info__' ]]; then
+              echo -e "$line"
+            elif [[ "$directive" == '__hop_warn__' ]]; then
+              echo -e "${COLOR_YELLOW}${line}${COLOR_RESET}"
             elif [[ "$directive" == '__hop_error__' ]]; then
-              local FONT_RED='\033[0;31m'
-              local FONT_DEFAULT='\033[0m'
-              echo -e "${FONT_RED}${line}${FONT_DEFAULT}"
+              echo -e "${COLOR_RED}${line}${COLOR_RESET}"
             else
+              echo $directive
+              echo $line
               echo -e 'Invalid command directive'
             fi
           fi
-        done < <(${HOP_VENV}/bin/python ${HOP_REPO}/hop $@)
+        done
       fi
       ;;
   esac
