@@ -1,4 +1,5 @@
 from os.path import expanduser
+from functools import reduce
 from re import sub
 import collections.abc
 
@@ -14,6 +15,14 @@ def issubdir(check_dir, ref_dir, allow_match = True):
     else:
         return check_dir.startswith(f'{ref_dir}/')
 
+
+def dig(_dict, *keys, default=None):
+    return (
+        reduce(lambda d, key: d.get(key, default)
+        if isinstance(d, dict) else default, keys, _dict)
+    )
+
+
 def mergedicts(dict1, dict2):
     for k, v in dict2.items():
         if isinstance(v, collections.abc.Mapping):
@@ -22,10 +31,12 @@ def mergedicts(dict1, dict2):
             dict1[k] = v
     return dict1
 
+
 def camelcase(s):
     s = sub(r"(_|-)+", " ", s).title().replace(" ", "").replace("*","")
 
     return ''.join([s[0].lower(), s[1:]])
+
 
 def snake_case(s):
   return '_'.join(

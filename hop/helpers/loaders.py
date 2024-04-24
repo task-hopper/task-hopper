@@ -41,14 +41,15 @@ def load_carrots(composer=None, subparsers=None):
                 composer.add('error', f"Carrot Error: {carrot_name} module missing Carrot class member.")
 
             # Start carrot metadata dict
-            carrot = None
-            for (_, c) in carrot_members:
-                carrot = {
-                    'name': c.__name__,
-                    'klass': c(),
-                    'tasks': {},
-                    'commands': {}
-                }
+            carrot_spec = None
+            _, carrot_cls = carrot_members[0]
+            carrot = carrot_cls()
+            carrot_spec = {
+                'name': carrot_cls.__name__,
+                'klass': carrot,
+                'tasks': {},
+                'commands': {}
+            }
             # Iterate through carrot submodules
             for _2, carrot_submodule_name, is_pkg2 in pkgutil.iter_modules(carrot_package.__path__, carrot_package.__name__ + '.'):
                 # Allow tasks and commands submodules only
@@ -66,17 +67,20 @@ def load_carrots(composer=None, subparsers=None):
                         base_modules = [i.__name__ for i in c.__bases__]
                         if 'Task' in base_modules:
                             task = c()
-                            task._bootstrap(composer=composer, carrot=carrot_name)
-                            carrot['tasks'][c.__name__] = task
+                            task._bootstrap(
+                                composer=composer,
+                                carrot=carrot
+                            )
+                            carrot_spec['tasks'][c.__name__] = task
                         if 'Command' in base_modules:
                             command = c()
                             command._bootstrap(
-                                carrot=carrot_name,
+                                carrot=carrot,
                                 composer=composer,
                                 subparsers=subparsers
                             )
-                            carrot['commands'][command.alias] = command
-            bunch[carrot_name] = carrot
+                            carrot_spec['commands'][command.alias] = command
+            bunch[carrot_name] = carrot_spec
 
     return bunch
 
@@ -100,7 +104,7 @@ def load_tasks(composer=None):
 
 # load core Task Hopper commands
 def load_core_commands(*, composer, tasks, subparsers):
-    cmds = {}
+    commands = {}
     imported_package = __import__('commands', fromlist=['devnull'])
     for _, command_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + '.'):
         if not is_pkg:
@@ -109,15 +113,15 @@ def load_core_commands(*, composer, tasks, subparsers):
             for cls in cls_members:
                 if _issubclass(cls, Command):
                     (_, c) = cls
-                    cmd_cls = c()
-                    cmd_cls._bootstrap(
+                    command = c()
+                    command._bootstrap(
                         composer=composer,
                         tasks=tasks,
                         subparsers=subparsers
                     )
-                    cmds[cmd_cls.alias] = cmd_cls
+                    commands[command.alias] = command
 
-    return cmds
+    return commands
 
 
 # load configured commands
