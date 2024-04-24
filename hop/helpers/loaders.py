@@ -139,7 +139,7 @@ def load_configured_commands(*, composer, subparsers):
 
         def new_process_command(self, _, c=c):
             cmd_args = ' '.join(self.additional_args)
-            composer.add('task', f'{c} {cmd_args}')
+            composer.add('eval', f'{c} {cmd_args}')
 
         command.process_command = types.MethodType(new_process_command, command)
 
