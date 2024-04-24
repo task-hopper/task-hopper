@@ -1,12 +1,12 @@
 #!/bin/bash
 
 
-export HOP_REPO="${HOME}/repos/personal/task-hopper-two"
-export HOP_VENV="${HOME}/.hop2/venv"
+export HOP_REPO="${HOME}/.hop/repo"
+export HOP_VENV="${HOME}/.hop/venv"
 
 
 # Main hop function
-hop3() {
+hop() {
   case "$1" in
     init)
       if [ "$?" -eq 0 ]; then
@@ -59,12 +59,12 @@ hop3() {
 }
 
 
-hop3d() {
+hopd() {
   ${HOP_VENV}/bin/python ${HOP_REPO}/hop $@
 }
 
 
-_hop3()
+_hop()
 {
     local cur prev opts
     COMPREPLY=()
@@ -72,7 +72,7 @@ _hop3()
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [[ ${COMP_CWORD} -eq 1 ]]; then
-      hopcommands=$(hop3 -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
+      hopcommands=$(hop -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
       COMPREPLY=($(compgen -W "${hopcommands}" -- ${cur}))
       return 0
     fi
@@ -83,4 +83,4 @@ if [[ $(ps -p$$ -ocmd=) = "zsh" ]]; then
   bashcompinit
 fi
 
-complete -F _hop3 hop3
+complete -F _hop hop

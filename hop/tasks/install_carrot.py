@@ -26,7 +26,7 @@ class InstallCarrot(Task):
     def _install_official(self, carrot_name, carrot_data=None):
         self.composer.add("info", f"Installing {carrot_name}...")
         carrot_location = f"{REPO_PATH}/carrots/{carrot_name}"
-        install_location = apath(f"~/.hop2/carrots/{carrot_name}")
+        install_location = apath(f"~/.hop/carrots/{carrot_name}")
 
         os.makedirs(install_location, exist_ok=True)
         shutil.copytree(carrot_location, install_location, dirs_exist_ok=True)

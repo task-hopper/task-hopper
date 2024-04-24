@@ -7,8 +7,7 @@ from config_handler import configs
 from helpers.utils import apath, mergedicts
 
 
-#  CARROT_PATH = apath('~/repos/personal/task-hopper-two/carrots')
-CARROT_PATH = apath('~/.hop2/carrots')
+CARROT_PATH = apath('~/.hop/carrots')
 
 sys.path.append(CARROT_PATH)
 

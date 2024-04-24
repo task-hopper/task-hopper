@@ -8,7 +8,7 @@ COLOR_RED="\033[1;31m"
 COLOR_RESET="\033[0m"
 
 # Locations
-CARROT_DIR="${HOME}/.hop2/carrots"
+CARROT_DIR="${HOME}/.hop/carrots"
 
 # Python
 if [ -n "$HOP_SYS_PY" ]; then
