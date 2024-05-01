@@ -1,3 +1,6 @@
+import json
+
+
 class Carrot:
-    def __init__(self):
-        print('hi')
+    def _bootstrap(self, configs):
+        self.configs = configs

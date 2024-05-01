@@ -2,15 +2,12 @@ import inspect
 import pkgutil
 import sys
 import types
-from hop import Carrot, Command, Task
-from config_handler import configs
-from helpers.utils import apath, mergedicts
+from hop import Carrot, Command, Task, configs
+from helpers.utils import apath
 
 
-CARROT_PATH = apath('~/.hop/carrots')
-
+CARROT_PATH = apath("~/.hop/carrots")
 sys.path.append(CARROT_PATH)
-
 
 
 def _issubclass(cls_member, parent_cls):
@@ -25,9 +22,9 @@ def load_carrots(composer=None, subparsers=None):
     bunch = {}
 
     # Iterate through each carrot plugin in the "carrots" folder
-    for _1, carrot_name, is_pkg1 in pkgutil.iter_modules([CARROT_PATH]):
+    for _1, carrot_package_name, is_pkg1 in pkgutil.iter_modules([CARROT_PATH]):
         if is_pkg1:
-            carrot_package = __import__(carrot_name, fromlist=['devnull'])
+            carrot_package = __import__(carrot_package_name, fromlist=["devnull"])
             carrot_members = [
                 m
                 for m
@@ -36,26 +33,31 @@ def load_carrots(composer=None, subparsers=None):
             ]
             # Make sure there is only 1 Carrot subclass defined for the carrot plugin
             if len(carrot_members) > 1:
-                composer.add('error', f"Carrot Error: {carrot_name} module has multiple members of Carrot class when one is required.")
+                composer.add("error", f"Carrot Error: {carrot_package_name} module has multiple members of Carrot class when one is required.")
             if not len(carrot_members):
-                composer.add('error', f"Carrot Error: {carrot_name} module missing Carrot class member.")
+                composer.add("error", f"Carrot Error: {carrot_package_name} module missing Carrot class member.")
 
             # Start carrot metadata dict
             carrot_spec = None
             _, carrot_cls = carrot_members[0]
             carrot = carrot_cls()
+            carrot_name = carrot_cls.__name__
+            carrot._bootstrap(
+                configs=configs.clip_scope(f"carrot.{carrot_name}"),
+            )
             carrot_spec = {
-                'name': carrot_cls.__name__,
-                'klass': carrot,
-                'tasks': {},
-                'commands': {}
+                "name": carrot_name,
+                "klass": carrot,
+                "tasks": {},
+                "commands": {}
             }
+
             # Iterate through carrot submodules
-            for _2, carrot_submodule_name, is_pkg2 in pkgutil.iter_modules(carrot_package.__path__, carrot_package.__name__ + '.'):
+            for _2, carrot_submodule_name, is_pkg2 in pkgutil.iter_modules(carrot_package.__path__, carrot_package.__name__ + "."):
                 # Allow tasks and commands submodules only
-                allowed_submodules = [ f"{carrot_name}.{asm}" for asm in ['tasks', 'commands'] ]
+                allowed_submodules = [ f"{carrot_package_name}.{asm}" for asm in ["tasks", "commands"] ]
                 if is_pkg2 and carrot_submodule_name in allowed_submodules:
-                    carrot_submodule = __import__(carrot_submodule_name, fromlist=['devnull']) 
+                    carrot_submodule = __import__(carrot_submodule_name, fromlist=["devnull"]) 
                     carrot_submodule_members = [
                         m
                         for m
@@ -65,21 +67,21 @@ def load_carrots(composer=None, subparsers=None):
 
                     for (_, c) in carrot_submodule_members:
                         base_modules = [i.__name__ for i in c.__bases__]
-                        if 'Task' in base_modules:
+                        if "Task" in base_modules:
                             task = c()
                             task._bootstrap(
                                 composer=composer,
                                 carrot=carrot
                             )
-                            carrot_spec['tasks'][c.__name__] = task
-                        if 'Command' in base_modules:
+                            carrot_spec["tasks"][c.__name__] = task
+                        if "Command" in base_modules:
                             command = c()
                             command._bootstrap(
                                 carrot=carrot,
                                 composer=composer,
-                                subparsers=subparsers
+                                subparsers=subparsers,
                             )
-                            carrot_spec['commands'][command.alias] = command
+                            carrot_spec["commands"][command.alias] = command
             bunch[carrot_name] = carrot_spec
 
     return bunch
@@ -87,10 +89,10 @@ def load_carrots(composer=None, subparsers=None):
 
 def load_tasks(composer=None):
     tasks = {}
-    imported_package = __import__('tasks', fromlist=['devnull'])
-    for _, task_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + '.'):
+    imported_package = __import__("tasks", fromlist=["devnull"])
+    for _, task_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + "."):
         if not is_pkg:
-            task_module = __import__(task_name, fromlist=['devnull'])
+            task_module = __import__(task_name, fromlist=["devnull"])
             cls_members = inspect.getmembers(task_module, inspect.isclass)
             for cls in cls_members:
                 if _issubclass(cls, Task):
@@ -105,10 +107,10 @@ def load_tasks(composer=None):
 # load core Task Hopper commands
 def load_core_commands(*, composer, tasks, subparsers):
     commands = {}
-    imported_package = __import__('commands', fromlist=['devnull'])
-    for _, command_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + '.'):
+    imported_package = __import__("commands", fromlist=["devnull"])
+    for _, command_name, is_pkg in pkgutil.iter_modules(imported_package.__path__, imported_package.__name__ + "."):
         if not is_pkg:
-            command_module = __import__(command_name, fromlist=['devnull'])
+            command_module = __import__(command_name, fromlist=["devnull"])
             cls_members = inspect.getmembers(command_module, inspect.isclass)
             for cls in cls_members:
                 if _issubclass(cls, Command):
@@ -129,21 +131,22 @@ def load_configured_commands(*, composer, subparsers):
     cmds = {}
 
     # get configuration
-    global_commands = configs.configs.get('commands', {})
-    current_project = configs.current_project()
-    project_commands = {}
-    if current_project:
-        project_commands = configs.project_configs(current_project).get('commands', {})
-    config_commands = mergedicts(global_commands, project_commands)
+    global_commands = configs.get("commands", {})
+    #  current_project = configs.current_project()
+    #  project_commands = {}
+    #  if current_project:
+        #  project_commands = configs.project_configs(current_project).get("commands", {})
+    #  config_commands = mergedicts(global_commands, project_commands)
+    config_commands = global_commands
 
     # build commands
     for a, c in config_commands.items():
-        help_msg = (c[:35] + '...') if len(c) > 35 else c
+        help_msg = (c[:35] + "...") if len(c) > 35 else c
         command = Command(alias=a, help=help_msg)
 
         def new_process_command(self, _, c=c):
-            cmd_args = ' '.join(self.additional_args)
-            composer.add('eval', f'{c} {cmd_args}')
+            cmd_args = " ".join(self.additional_args)
+            composer.add("eval", f"{c} {cmd_args}")
 
         command.process_command = types.MethodType(new_process_command, command)
 
@@ -165,10 +168,10 @@ def initialize_task_hopper(composer=None, subparsers=None):
     for _, meta in carrot_bunch.items():
         # bind tasks
         # TODO: handle task name collisions
-        task_ref = {**tasks, **meta['tasks']}
+        task_ref = {**tasks, **meta["tasks"]}
 
         # bind tasks to commands
-        for alias, cls in meta['commands'].items():
+        for alias, cls in meta["commands"].items():
             cls._bind_tasks(task_ref)
             # TODO: handle command alias collisions
             commands[alias] = cls

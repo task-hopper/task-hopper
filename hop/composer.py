@@ -23,4 +23,4 @@ class Composer:
             print(item)
         sys.exit()
 
-composer = Composer()
+#  composer = Composer()

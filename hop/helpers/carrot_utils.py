@@ -11,7 +11,7 @@ def read_registry():
         return yaml.safe_load(f)
 
 
-def registy_data_str(carrot_name=None):
+def registy_data_str(carrot_package_name=None):
     data = read_registry
 
     return data.keys()

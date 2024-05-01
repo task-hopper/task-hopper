@@ -17,7 +17,7 @@ class CarrotCommand(Command):
             "available", help="list available carrots"
         )
 
-        available_parser.add_argument("carrot_name", nargs="?", help="name of carrot")
+        available_parser.add_argument("carrot_package_name", nargs="?", help="name of carrot")
 
         ###########
         # install #
@@ -26,7 +26,7 @@ class CarrotCommand(Command):
             "install", help="install a carrot plugin"
         )
 
-        install_parser.add_argument("carrot_name", help="name of the carrot")
+        install_parser.add_argument("carrot_package_name", help="name of the carrot")
         install_parser.add_argument("-v", "--version", help="version tag/branch")
         install_parser.add_argument("-r", "--repo", help="repo clone string or local path")
 
@@ -37,7 +37,7 @@ class CarrotCommand(Command):
             "show", help="show carrot version"
         )
 
-        show_parser.add_argument("carrot_name", help="name of the carrot")
+        show_parser.add_argument("carrot_package_name", help="name of the carrot")
 
         ##########
         # remove #
@@ -46,7 +46,7 @@ class CarrotCommand(Command):
             "remove", help="uninstall a carrot"
         )
 
-        remove_parser.add_argument("carrot_name", help="name of the carrot")
+        remove_parser.add_argument("carrot_package_name", help="name of the carrot")
 
         #######
 
@@ -64,7 +64,7 @@ class CarrotCommand(Command):
         elif parsed_args.subcommand == 'install':
             self.push_task(
                 'InstallCarrot',
-                carrot_name=parsed_args.carrot_name,
+                carrot_package_name=parsed_args.carrot_package_name,
                 version=parsed_args.version,
                 repo=parsed_args.repo
             )
