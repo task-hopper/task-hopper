@@ -2,14 +2,12 @@ class Command(object):
     def __init__(self, alias=None, help=""):
         super().__init__()
         self.carrot = None
-        self.composer = None
         self.alias = alias
         self.help = help
         self.additional_args = []
 
-    def _bootstrap(self, *, composer, subparsers, tasks=None, carrot=None):
+    def _bootstrap(self, *, subparsers, tasks=None, carrot=None):
         self.carrot = carrot
-        self.composer = composer
         self.task_ref = tasks
 
         self.parser = subparsers.add_parser(

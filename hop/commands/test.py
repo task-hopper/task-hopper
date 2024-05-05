@@ -1,4 +1,4 @@
-from hop import Command
+from core import Command
 
 
 class Foo(Command):

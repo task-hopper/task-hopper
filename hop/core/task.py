@@ -1,6 +1,5 @@
 class Task():
-    def _bootstrap(self, composer, carrot=None):
-        self.composer = composer
+    def _bootstrap(self, carrot=None):
         self.carrot = carrot
 
     def stage(self):

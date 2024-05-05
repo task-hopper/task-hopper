@@ -1,7 +1,10 @@
-from hop import Task, THCallback
+from core import (
+    Task,
+    composer,
+)
 
 
 class HelloWorld(Task):
     def stage(self):
-        self.composer.add('info', 'Hello, World!')
+        composer.add('info', 'Hello, World!')
 

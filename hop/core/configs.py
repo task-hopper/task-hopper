@@ -5,34 +5,29 @@ import jinja2
 from copy import deepcopy
 from functools import reduce
 
-from helpers.utils import apath, dig
+from utils.os_tools import apath
+from utils.dict_tools import dig
 
 
 class Configs:
-    def __init__(self, scope=None, preloaded_data={}):
-        self._scope = scope
-        self._data = preloaded_data or self._load_config()
+    def __init__(self, config_path=None, preloaded_data={}):
+        self.data = preloaded_data or self._load_config(config_path or apath("~/.hoprc"))
 
     def get(self, key_str, default=None):
-        return dig(self._data, *key_str.split("."), default=default)
+        return dig(self.data, *key_str.split("."), default=default)
 
     def clip_scope(self, key_str):
         keypath = key_str.split(".")
-        data = deepcopy(dig(self._data, *keypath, default={}))
+        data = deepcopy(dig(self.data, *keypath, default={}))
 
-        return Configs(scope=key_str, preloaded_data=data)
+        return Configs(preloaded_data=data)
 
     def print(self):
-        print(json.dumps(self._data, indent=4))
+        print(json.dumps(self.data, indent=4))
 
-    def reload(self):
-        self._data = self._load_config()
-        self.configs = Config(self._data)
-
-    def _load_config(self):
-        fpath = apath("~/.hoprc")
-        if os.path.exists(fpath):
-            with open(fpath) as f:
+    def _load_config(self, config_path):
+        if os.path.exists(config_path):
+            with open(config_path) as f:
                 config_map = yaml.safe_load(f) or {}
 
                 #  return if hoprc has no contents
@@ -40,16 +35,17 @@ class Configs:
                     return {}
 
                 env = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath="/"))
-                template = env.get_template(fpath)
+                template = env.get_template(config_path)
 
                 config = yaml.safe_load(template.render(**config_map))
 
-                return self._unpack_configs(config)
+                self.initial_data = config
+                return self._unpack_configs(config, unpacked_configs={}, keypath=[])
         else:
             return {}
 
-    def _unpack_configs(self, configs, unpacked_configs={}, keypath=[]):
-        for key, val in configs.items():
+    def _unpack_configs(self, config, unpacked_configs, keypath):
+        for key, val in config.items():
             if "." in key or keypath:
                 nested_keys = [*keypath, *key.split(".")]
                 nesetd_val = reduce(

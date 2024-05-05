@@ -1,5 +1,9 @@
-from hop import Command
-from helpers.carrot_utils import read_registry
+from core import (
+    Command,
+    composer,
+)
+from core.carrot_registry import read_registry
+
 
 
 class CarrotCommand(Command):
@@ -60,7 +64,7 @@ class CarrotCommand(Command):
             registry_data = read_registry()
             carrots = "\n".join(list(registry_data.keys()))
             output = f"\nAvailable Carrots\n-----------------\n\n{carrots}"
-            self.composer.add('info', output)
+            composer.add('info', output)
         elif parsed_args.subcommand == 'install':
             self.push_task(
                 'InstallCarrot',
@@ -69,4 +73,4 @@ class CarrotCommand(Command):
                 repo=parsed_args.repo
             )
         else:
-            self.composer.add('info', f"{parsed_args.subcommand} not ready yet")
+            composer.add('info', f"{parsed_args.subcommand} not ready yet")

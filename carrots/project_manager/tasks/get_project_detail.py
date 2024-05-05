@@ -1,16 +1,16 @@
-from hop import (
+from th import (
     Task,
+    composer,
 )
 
 
 class GetProjectDetail(Task):
-    def stage(self):
-        self.composer.add('info', 'foo')
-    #  def stage(self, detail_type='alias', project_name=configs.current_project()):
-        #  detail = {
-            #  'alias': project_name,
-            #  'name': configs.project_configs(project_name).get('name', project_name),
-            #  'path': configs.project_configs(project_name).get('path', '')
-        #  }.get(detail_type, '')
+    def stage(self, detail_type='alias', project_name=None):
+        pname = project_name or self.carrot.current_project()
+        detail = {
+            'alias': pname,
+            'name': self.carrot.project_configs(project_name).get('name', project_name),
+            'path': self.carrot.project_configs(project_name).get('path', '')
+        }.get(detail_type, '')
 
-        #  self.composer.add('info', detail)
+        composer.add('info', detail)

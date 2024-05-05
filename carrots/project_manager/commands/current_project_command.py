@@ -1,4 +1,4 @@
-from hop import Command
+from th import Command
 
 
 class CurrentProjectCommand(Command):

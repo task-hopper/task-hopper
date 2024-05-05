@@ -2,13 +2,21 @@ import inspect
 import pkgutil
 import sys
 import types
-from hop import Carrot, Command, Task, configs
-from helpers.utils import apath
-from composer import Composer
-
+from core import (
+    Carrot,
+    Command,
+    Task,
+)
+from core.composer import Composer
+from core.configs import Configs
+from utils.os_tools import apath
 
 CARROT_PATH = apath("~/.hop/carrots")
 sys.path.append(CARROT_PATH)
+
+# Set up composer and configs instances
+composer = Composer()
+configs = Configs()
 
 
 def _issubclass(cls_member, parent_cls):
@@ -18,14 +26,17 @@ def _issubclass(cls_member, parent_cls):
         cls_member[1] is not parent_cls
     )
 
-
 class Loader:
     def __init__(self, subparsers):
         self.subparsers = subparsers
-        self.composer = Composer()
         self.bunch = {}
         self.tasks = {}
         self.commands = {}
+        self.proxy = LoaderProxy(
+            self.push_tasks,
+            self.push_commands,
+        )
+        # Load TaskHopper
         self._load_task_hopper()
 
 
@@ -35,19 +46,27 @@ class Loader:
         self._load_configured_commands()
         self._load_carrots()
 
+        # Initialize Carrot 
         for _, meta in self.bunch.items():
-            self._push_tasks(meta.get("tasks", {}), source_name=meta.get("name"))
+            # Add Tasks
+            self.push_tasks(meta.get("tasks", {}), source_name=meta.get("name"))
             for _, cmd in meta.get("commands", {}).items():
                 cmd._bind_tasks(self.tasks)
-            self._push_commands(meta.get("commands", {}), source_name=meta.get("name"))
+            # Add Commands
+            self.push_commands(meta.get("commands", {}), source_name=meta.get("name"))
+            # Run loader
+            carrot = meta.get("instance")
+            if hasattr(carrot, "__load__"):
+                carrot.__load__()
 
+        # Initialize Commands
         for _, cmd in self.commands.items():
             cmd.setup_command()
 
-    def _push_tasks(self, tasks={}, source_name="?"):
+    def push_tasks(self, tasks={}, source_name="?"):
         for task_name, task in tasks.items():
             if task_name in self.tasks:
-                self.composer.add(
+                composer.add(
                     "error",
                     (
                         f"[{source_name}] {task_name} already exists. "
@@ -57,10 +76,10 @@ class Loader:
             else:
                 self.tasks[task_name] = task
 
-    def _push_commands(self, commands={}, source_name="?"):
+    def push_commands(self, commands={}, source_name="?"):
         for command_name, command in commands.items():
             if command_name in self.commands:
-                self.composer.add(
+                composer.add(
                     "error",
                     (
                         f"[{source_name}]Command '{command_name}' already exists. "
@@ -85,9 +104,9 @@ class Loader:
                 ]
                 # Make sure there is only 1 Carrot subclass defined for the carrot plugin
                 if len(carrot_members) > 1:
-                    self.composer.add("error", f"Carrot Error: {carrot_package_name} module has multiple members of Carrot class when one is required.")
+                    composer.add("error", f"Carrot Error: {carrot_package_name} module has multiple members of Carrot class when one is required.")
                 if not len(carrot_members):
-                    self.composer.add("error", f"Carrot Error: {carrot_package_name} module missing Carrot class member.")
+                    composer.add("error", f"Carrot Error: {carrot_package_name} module missing Carrot class member.")
 
                 # Start carrot metadata dict
                 carrot_spec = None
@@ -96,10 +115,12 @@ class Loader:
                 carrot_name = carrot_cls.__name__
                 carrot._bootstrap(
                     configs=configs.clip_scope(f"carrot.{carrot_name}"),
+                    loader=self.proxy,
+                    subparsers=self.subparsers,
                 )
                 carrot_spec = {
                     "name": carrot_name,
-                    "klass": carrot,
+                    "instance": carrot,
                     "tasks": {},
                     "commands": {}
                 }
@@ -122,7 +143,6 @@ class Loader:
                             if "Task" in base_modules:
                                 task = c()
                                 task._bootstrap(
-                                    composer=self.composer,
                                     carrot=carrot
                                 )
                                 carrot_spec["tasks"][c.__name__] = task
@@ -130,7 +150,6 @@ class Loader:
                                 command = c()
                                 command._bootstrap(
                                     carrot=carrot,
-                                    composer=self.composer,
                                     subparsers=self.subparsers,
                                 )
                                 carrot_spec["commands"][command.alias] = command
@@ -148,7 +167,7 @@ class Loader:
                     if _issubclass(cls, Task):
                         (_, c) = cls
                         task = c()
-                        task._bootstrap(composer=self.composer)
+                        task._bootstrap()
                         self.tasks[c.__name__] = task
 
     def _load_core_commands(self):
@@ -167,7 +186,6 @@ class Loader:
                         (_, c) = cls
                         command = c()
                         command._bootstrap(
-                            composer=self.composer,
                             tasks=self.tasks,
                             subparsers=self.subparsers
                         )
@@ -193,9 +211,35 @@ class Loader:
 
             def new_process_command(self, _, c=cmd):
                 cmd_args = " ".join(self.additional_args)
-                self.composer.add("eval", f"{c} {cmd_args}")
+                composer.add("eval", f"{c} {cmd_args}")
 
             command.process_command = types.MethodType(new_process_command, command)
 
-            command._bootstrap(composer=self.composer, subparsers=self.subparsers)
+            command._bootstrap(subparsers=self.subparsers)
             self.commands[alias] = command
+
+
+class LoaderProxy:
+    def __init__(self, *methods):
+        self.__frozen__ = False
+        for method in methods:
+            setattr(self, method.__name__, self._wrap_method(method))
+
+    def freeze(self):
+        self.__frozen__ = True
+
+    def _wrap_method(self, method):
+        original_method_name = method.__name__
+        def wrapper(*args, source_name="?", **kwargs):
+            if not self.__frozen__:
+                return method(*args, **kwargs)
+            else:
+                composer.add(
+                    'warn',
+                    (
+                        f"[{source_name}] Cannot call {original_method_name} on loader "
+                        "after loading is complete"
+                    )
+                )
+
+        return wrapper

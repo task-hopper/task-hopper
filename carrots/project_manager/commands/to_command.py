@@ -1,4 +1,4 @@
-from hop import Command
+from th import Command
 
 
 class ToCommand(Command):
@@ -13,7 +13,6 @@ class ToCommand(Command):
     def process_command(self, parsed_args):
         # Unset the current project env vars before going to destination project
         #  configs = self.configs
-        #  breakpoint()
         #  if configs.current_project():
             #  self.push_task('ChangeEnv', action='unset')
         # prompt cd
