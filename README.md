@@ -1,20 +1,208 @@
 # Task Hopper
 ## Description:
-A project management CLI that makes it easier to navigate and automate your project workflow.
+An extensible CLI designed to improve customized workflows.
 
 ## Installation
-- clone repo
-- install dependencies
-- copy hop/ext/hop.sh.example to somewhere, remove the .example, and add a line like the following to your .bashrc (or other shell rc):
-    source $HOME/Projects/task-hopper/hop/ext/hop.sh
+### 1. Clone Repo
+```
+git clone git@github.com:task-hopper/task-hopper.git ~/.hop/repo
+```
 
-## Features
-- change directories
-- configurations at the global and project-specific level
-- manage environment variables
-- set up custom scripts and commands
-- extensible via carrots, which are installable modules (think gems or eggs)
-- life cycle hooks
+### 2. Install TaskHopper
+Add the following to your `~/.bashrc`
+```
+source $HOME/.hop/repo/bin/hop.bash
+```
+
+### 3. Initialize TaskHopper
+Now that TaskHopper is installed, it is time to initialize the CLI. (this is a one-time command)
+```
+hop init
+```
+
+What does `init` do?
+-  Sets up required directories (located at `~/.hop`)
+-  Checks that python3 is installed and creates a virtual environment for dependencies
+-  Installs python dependencies into the virtual environment
+
+_\* You can rerun `init` to clear the existing init by passing the `-f` flag_
+
+
+## Carrots
+### What are carrots?
+Carrots are plugins that enchance the TaskHopper CLI. They are written in python and come in two varieties:
+1. __Official__ - These are plugins that have been accepted and included as part of the official TaskHopper repository.
+1. __Unofficial__ - These are plugins developed by a 3rd party or yourself. ___Please use caution when using 3rd party carrots as the TaskHopper CLI has direct shell session access. Reviewing the code or using debug mode to audit the composer is highly advised.___
+
+### How do you install a carrot?
+To view the carrot registry:
+```
+hop carrot available
+```
+
+To install run:
+```
+hop carrot install <carrot_name>
+```
+
+### Official Carrots
+- __Project Manager__ - This carrot is a tool for easy project navigation and interaction. _(see documentation)_
+  - Features:
+      - project-specific configuration and commands
+      - changing to project directory via a configured project alias
+      - manage environment variables
+
+### Developer Guide
+The carrot architecture was built to be as simple as simple as possible to develop on. While it is very flexible, there some strict conventions that must be followed.
+
+#### Project Structure:
+```
+└── my_carrot
+    ├── bin
+    │   ├── python_script.py
+    │   └── shell_script.sh
+    ├── commands
+    │   ├── __init__.py
+    │   └── custom_command.py
+    ├── tasks
+    │   ├── __init__.py
+    │   └── custom_task.py
+    └── __init__.py
+```
+- `bin/` - This is where custom scripts used for callbacks will reside. These can be python scripts or bash scripts.
+- `commands/` - Custom commands go here. You must have an `__init__.py` to ensure the module is picked up by the loader. If you define commands in subfiles, please ensure you import them in the init.
+- `tasks/` - Custom tasks go here. You must have an `__init__.py` to ensure the module is picked up by the loader. If you define tasks in subfiles, please ensure you import them in the init.
+- `__init__.py` (top-level) - This is where the primary Carrot class resides.
+- `.carrotmeta` - This is a yaml file that holds metadata about the carrot such as the authors, version, and homepage.
+
+
+#### Command
+##### Class Reference
+```
+A class that adds a subcommand to "hop".
+
+Attributes
+----------
+alias : str, required
+  the subcommand to be added to hop
+help : str
+  the details that will be printed when using the "-h" or "--help" flags.
+  default - ""
+---
+These attributes are bound via the loader and should not be altered or passed in.
+carrot : Carrot
+  the instantiated Carrot class that the command belongs to (if added via a Carrot)
+parser : Parser
+  the argparse parser for the command. The name is defaulted to the Command's alias.
+
+Methods
+-------
+process_command(parsed_args):
+  This is where the logic goes for what happens after the command is called.
+  Arguments:
+    parsed_args: the parsed arguments via argparse
+  This will raise a NotImplementedError if not included in the class that inherits Command
+setup_command():
+  This is where you can use the Command's parser and customize the argparse behavior off of it.
+push_task(task, *args, **kwargs):
+  Arguments:
+    task : str - the string representation of the task class.
+  This will push a task to the composer for processing / composition.
+```
+
+Commands are what is used to add subcommands to `hop`. The Command class is built around the argparse library. Each Command child class is bootstrapped with a subparser and convenience methods to build out your own CLI command.
+
+At minimum, you need the class to have an `__init__` method that sets an `alias` attribute (what you will type on the command line), and a `help` attribute (the displayed description when using a `-h` or `--help` command).
+
+The class will also need to define a `process_command` method that accepts a `parsed_args` argument. This is the method that should hold the logic for what happens when the command executes. `parsed_args` is the parsed arguments that comes from the argparse library.
+
+A minimal class could look like this:
+```python
+from th import Command, composer
+
+class MyCommand(Command):
+  def __init__(self):
+    self.alias = "sayit"
+    self.help = "It says the thing!"
+
+  def process_command(self, parsed_args):
+    composer.add("info", "Hello, World!")
+```
+In action:
+```
+> hop sayit
+Hello, World!
+```
+
+If you want to further customize the commands by adding more subparsers or things such as arguments or argument groups (see argparse documentation for how to do this), you can make use of the `setup_command` method. The parser for your command is bound to an attribute via `self.parser`. If we wanted to take in a flag to replace the word "World" in the output of the minimal class example, it would look something like this:
+
+```python
+from th import Command, composer
+
+class MyCommand(Command):
+  def __init__(self):
+    self.alias = "sayit"
+    self.help = "It says the thing!"
+
+  def setup_command(self):
+    self.parser.add_argument("word", help="the word to say")
+
+  def process_command(self, parsed_args):
+    word = parsed_args.word
+    composer.add("info", f"Hello, {word}!")
+```
+In action:
+```
+> hop sayit Friend
+Hello, Friend!
+```
+
+#### Task
+##### Class Reference
+```
+TODO
+
+Attributes
+----------
+alias : str, required
+  the subcommand to be added to hop
+help : str
+  the details that will be printed when using the "-h" or "--help" flags.
+  default - ""
+---
+These attributes are bound via the loader and should not be altered or passed in.
+carrot : Carrot
+  the instantiated Carrot class that the command belongs to (if added via a Carrot)
+parser : Parser
+  the argparse parser for the command. The name is defaulted to the Command's alias.
+
+Methods
+-------
+process_command(parsed_args):
+  This is where the logic goes for what happens after the command is called.
+  Arguments:
+    parsed_args: the parsed arguments via argparse
+  This will raise a NotImplementedError if not included in the class that inherits Command
+setup_command():
+  This is where you can use the Command's parser and customize the argparse behavior off of it.
+push_task(task, *args, **kwargs):
+  Arguments:
+    task : str - the string representation of the task class.
+  This will push a task to the composer for processing / composition.
+```
+Tasks are classes that hold repeatable logic and often add directives to the composer.
+
+
+
+## Core Commands
+### TODO
+---
+---
+---
+OLD DOCS
+---
+---
+---
 
 ## Core Commands
 #### `cd` to project's root directory and set default environment variables if configured
