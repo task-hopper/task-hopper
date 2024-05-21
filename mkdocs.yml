@@ -1,0 +1,65 @@
+site_name: Task Hopper
+repo_url: 'https://github.com/task-hopper/task-hopper'
+repo_name: 'task-hopper/task-hopper'
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - announce.dismiss
+  palette:
+
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+
+
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+extra_css:
+  - style.css
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: index.md
+  - Guide:
+    - What is Task Hopper?: guide/overview.md
+    - Getting Started: guide/getting_started.md
+  - Usage:
+    - Commands: usage/commands.md
+    - Configuration: usage/configuration.md
+    - Carrots: usage/carrots.md
+  - Developer:
+    - Architecture Overview: developer/architecture_overview.md
+    - Reference:
+      - '<code class="customCode">Carrot</code> class': developer/reference/carrot.md
+      - '<code class="customCode">Command</code> class': developer/reference/command.md
+      - '<code class="customCode">Composer</code> class': developer/reference/composer.md
+      - '<code class="customCode">Config</code> class': developer/reference/config.md
+      - '<code class="customCode">Task</code> class': developer/reference/task.md
+    - Building Carrots:
+      - Carrot Definition: developer/building_carrots/carrot_definition.md
+      - Custom Command: developer/building_carrots/custom_command.md
+      - Custom Task: developer/building_carrots/custom_task.md
