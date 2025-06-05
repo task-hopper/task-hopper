@@ -8,6 +8,7 @@ theme:
     repo: fontawesome/brands/github
   features:
     - announce.dismiss
+    - content.code.copy
   palette:
 
     # Palette toggle for automatic mode
@@ -33,14 +34,27 @@ theme:
         name: Switch to system preference
 
 extra_css:
-  - style.css
+  - stylesheets/mk_docs.yml.css
+  - stylesheets/md.css
 
 markdown_extensions:
   - attr_list
   - md_in_html
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          setup_commands:
+            - "import sys; sys.path.insert(0, '/home/jtcrank/repos/personal/task-hopper')"
+          options:
+            docstring_style: numpy
 
 nav:
   - Home: index.md
@@ -54,11 +68,11 @@ nav:
   - Developer:
     - Architecture Overview: developer/architecture_overview.md
     - Reference:
-      - '<code class="customCode">Carrot</code> class': developer/reference/carrot.md
-      - '<code class="customCode">Command</code> class': developer/reference/command.md
-      - '<code class="customCode">Composer</code> class': developer/reference/composer.md
-      - '<code class="customCode">Config</code> class': developer/reference/config.md
-      - '<code class="customCode">Task</code> class': developer/reference/task.md
+      - '<code class="codeClass">Carrot</code> class': developer/reference/carrot.md
+      - '<code class="codeClass">Command</code> class': developer/reference/command.md
+      - '<code class="codeClass">Composer</code> class': developer/reference/composer.md
+      - '<code class="codeClass">Config</code> class': developer/reference/config.md
+      - '<code class="codeClass">Task</code> class': developer/reference/task.md
     - Building Carrots:
       - Carrot Definition: developer/building_carrots/carrot_definition.md
       - Custom Command: developer/building_carrots/custom_command.md

@@ -31,12 +31,6 @@ usage: hop [-h]  ...
 positional arguments:
 
     carrot    perform carrot action
-    foo       It says the thing
-    docs      open ~/repos/cordata/dev-docs/_asse...
-    test_it   echo 'it works'
-    current   show current project details
-    list      list configured projects
-    to        cd to project directory
 
 options:
   -h, --help  show this help message and exit

@@ -1,0 +1,23 @@
+.md-typeset .codeTheme {
+  color: var(--md-code-fg-color);
+  background-color: var(--md-code-bg-color);
+  padding: 3px 5px 3px 5px;
+}
+
+.md-typeset .codeClass {
+  color: #79c0ff;
+  background-color: #27323f;
+  padding: 3px 5px 3px 5px;
+}
+
+.md-typeset .codeAttr {
+  color: #ffa657;
+  background-color: #352f2e;
+  padding: 3px 5px 3px 5px;
+}
+
+.md-typeset .codeFunc {
+  color: #d2a8ff;
+  background-color: #312f3f;
+  padding: 3px 5px 3px 5px;
+}
