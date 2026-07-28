@@ -1,7 +1,12 @@
-commands:
-  ex: echo "example command"
-env:
-  default:
-    HOP_EXAMPLE: default
-  local:
-    HOP_EXAMPLE: local
+# .hop — directory-local hop configuration
+# Place this file in any directory. It is deep-merged over ~/.hoprc
+# when hop is run from that directory or any subdirectory.
+#
+# Use this to define command shortcuts specific to a project or context.
+
+# Directory-local command shortcuts — override or extend global commands.
+#
+# commands:
+#   start: yarn start
+#   build: yarn build
+#   test: yarn test

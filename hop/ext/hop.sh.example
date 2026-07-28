@@ -1,96 +1,56 @@
+# hop shell integration
+# Copy this file to your shell config (e.g. ~/.bashrc or ~/.zshrc) and source it.
+#
+# By default, hop uses whatever 'hop' binary is found in PATH.
+# If you need to point to a specific binary, set HOP_BIN before sourcing:
+#   export HOP_BIN=~/.hop/venv/bin/hop
+
+_hop_bin() {
+    echo "${HOP_BIN:-$(command -v hop)}"
+}
+
+# Process a stream of hop directives, evaluating tasks in the current shell context.
+_hop_process_output() {
+    local YELLOW='\033[0;33m'
+    local RED='\033[0;31m'
+    local RESET='\033[0m'
+
+    while IFS= read -r line; do
+        case "$line" in
+            __hop_task__:*)    eval "${line#__hop_task__:}" ;;
+            __hop_message__:*) echo "${line#__hop_message__:}" ;;
+            __hop_warning__:*) echo -e "${YELLOW}${line#__hop_warning__:}${RESET}" ;;
+            __hop_error__:*)   echo -e "${RED}${line#__hop_error__:}${RESET}"; return 1 ;;
+            *)                 ;;
+        esac
+    done
+}
+
+# Main hop function — runs the Python process and processes its output.
 hop() {
-  local directive=''
-  while IFS= read -r line ; do
-    if [[ "$line" =~ ^_{2}hop_{1}[A-Za-z]*_{2}$ ]]; then
-      directive="$line"
-    else
-      if [[ "$directive" == '__hop_message__' ]]; then
-        echo -e "$line"
-      elif [[ "$directive" == '__hop_task__' ]]; then
-        eval "$line" <&1
-      elif [[ "$directive" == '__hop_warning__' ]]; then
-        local FONT_YELLOW='\033[0;33m'
-        local FONT_DEFAULT='\033[0m'
-        echo -e "${FONT_YELLOW}${line}${FONT_DEFAULT}"
-      elif [[ "$directive" == '__hop_error__' ]]; then
-        local FONT_RED='\033[0;31m'
-        local FONT_DEFAULT='\033[0m'
-        echo -e "${FONT_RED}${line}${FONT_DEFAULT}"
-      else
-        echo -e 'Invalid command directive'
-      fi
-    fi
-  done < <(/home/crank/.hop/venv/bin/python /home/crank/repos/personal/task-hopper/hop $@)
+    "$(_hop_bin)" "$@" | _hop_process_output
 }
 
+# Debug mode — shows raw output first, then replays through the directive processor.
 hopd() {
-  echo "===== DEBUGGING ====="
-  HOP_DEBUG=True /home/crank/.hop/venv/bin/python /home/crank/repos/personal/task-hopper/hop $@ | tee ~/.hop/debug_output.tmp
-  echo "====================="
-  local composition=()
-  local directive=''
-  local end_debug=false
-  while IFS= read -r line ; do
-    if [[ "$end_debug" = true ]]; then
-      if [[ "$line" =~ ^_{2}hop_{1}[A-Za-z]*_{2}$ ]]; then
-        directive="$line"
-      else
-        if [[ "$directive" == '__hop_message__' ]]; then
-          echo -e "$line"
-        elif [[ "$directive" == '__hop_task__' ]]; then
-          eval "$line" <&1
-        elif [[ "$directive" == '__hop_warning__' ]]; then
-          local FONT_YELLOW='\033[0;33m'
-          local FONT_DEFAULT='\033[0m'
-          echo -e "${FONT_YELLOW}${line}${FONT_DEFAULT}"
-        elif [[ "$directive" == '__hop_error__' ]]; then
-          local FONT_RED='\033[0;31m'
-          local FONT_DEFAULT='\033[0m'
-          echo -e "${FONT_RED}${line}${FONT_DEFAULT}"
-        else
-          echo -e 'Invalid command directive'
-        fi
-      fi
-    fi
-    if [[ "$line" == '__HOP_END_DEBUG__' ]]; then
-      end_debug=true
-    fi
-  done < ~/.hop/debug_output.tmp
+    local output
+    output="$("$(_hop_bin)" "$@")"
+    echo "=== raw output ==="
+    echo "$output"
+    echo "=== executing ==="
+    echo "$output" | _hop_process_output
 }
 
-_hop()
-{
-    local cur prev opts
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
+# Bash completion
+_hop_complete() {
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+    local subcommands
+    subcommands="$("$(_hop_bin)" --help 2>/dev/null | awk '/Commands/{found=1; next} found && /^  [a-z]/{print $1}')"
 
-    if [[ ${COMP_CWORD} -eq 1 ]]; then
-      hopcommands=$(hop -h | awk '/positional arguments:/{flag=1;next}/^$/{flag=0}flag' | cut -d ' ' -f 5)
-      COMPREPLY=($(compgen -W "${hopcommands}" -- ${cur}))
-      return 0
+    if [[ $COMP_CWORD -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "$subcommands" -- "$cur"))
     fi
-
-    case "$prev" in
-      to)
-        local projects=$(hop list --no-color | cut -c 4- | sed -n '0,/^$/p')
-        COMPREPLY=($(compgen -W "${projects}" -- ${cur}))
-        return 0
-        ;;
-
-      env)
-        local envs=$(hop env -l)
-        [[ $envs =~ "No environments configured" ]] && return 0
-        COMPREPLY=($(compgen -W "${envs}" -- ${cur}))
-        return 0
-        ;;
-    esac
 }
 
-if [[ $(ps -p$$ -ocmd=) = "zsh" ]]; then
-  autoload bashcompinit
-  bashcompinit
-fi
-
-complete -F _hop hop
-
+complete -F _hop_complete hop

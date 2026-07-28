@@ -1,41 +1,41 @@
-#!/usr/bin/env python3
+import typer
 
-from composer import composer
-from helpers.loaders import initialize_hop
-from helpers.utils import apath
-import argparse
-import sys
+from hop.carrot.loader import load_carrots
+from hop.commands.carrot import app as carrot_app
+from hop.commands.init import init
 
-sys.path.append(apath('~/repos/personal/task-hopper'))
+app = typer.Typer(
+    name="hop",
+    help="Task Hopper — extensible shell session manager.",
+    no_args_is_help=True,
+)
 
-def run_hop_command(command, parsed_args, additional_args):
-    command.additional_args = additional_args
-    command.process_command(parsed_args)
+app.add_typer(carrot_app, name="carrot")
+app.command()(init)
 
-def main():
-    commands = initialize_hop(composer=composer)
 
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest='subparser_name', metavar='')
+def _load_configured_commands() -> None:
+    from hop.config import configs
+    from hop.composer import composer
+    from hop.core.directives import TASK
 
-    for alias, cls in commands.items():
-        cls.setup_command(subparsers)
+    commands = configs.local_configs().get("commands", {})
+    for alias, shell_cmd in commands.items():
+        def make_command(cmd: str):
+            def command(args: list[str] = typer.Argument(None)) -> None:
+                full_cmd = cmd if not args else f"{cmd} {' '.join(args)}"
+                composer.add(TASK, full_cmd)
+            command.__name__ = alias
+            command.__doc__ = f"Run: {cmd}"
+            return command
+        app.command(name=alias)(make_command(shell_cmd))
 
-    if len(sys.argv) == 1 or sys.argv[-1] in ['-h', '--help']:
-        # print directive before showing help message
-        print('__hop_message__')
 
-    if len(sys.argv) == 1:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
+def main() -> None:
+    load_carrots(app)
+    _load_configured_commands()
+    app()
 
-    parsed_args = parser.parse_known_args()
 
-    run_hop_command(commands[parsed_args[0].subparser_name], parsed_args[0], parsed_args[1])
-
-    # compose result
-    composer.compose()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

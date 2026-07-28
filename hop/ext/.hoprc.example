@@ -1,23 +1,19 @@
-projects:
-  navui:
-    name: Navigator UI
-    path: '~/repos/cordata/navigator-ui'
-    commands:
-      s: yarn start
-      st: echo project st command
-    env:
-      autoload: local
-      default:
-        HOP_TEST: 'default set'
-      local:
-        HOP_ENV: local
-      staging:
-        HOP_ENV: staging
-      prod:
-        HOP_ENV: prod
-  navapi:
-    path: '~/repos/cordata/navigator-api'
-    commands:
-      s: puma -p 3000
-commands:
-  st: echo custom st command
+# ~/.hoprc — global hop configuration
+#
+# Jinja2 templating is supported. You can reference other values defined in this file:
+#   base_path: ~/projects
+#   some_path: "{{ base_path }}/myproject"
+
+# Global command shortcuts — available from any directory.
+# Run with: hop <alias> [extra args]
+#
+# commands:
+#   deploy: ./deploy.sh
+#   hello: echo "Hello from hop!"
+
+# Paths to local carrots not installed via 'hop carrot install'.
+# carrot_paths:
+#   - ~/my-carrots/my-carrot
+
+# Override the carrot index URL (for private/org indexes).
+# index_url: https://raw.githubusercontent.com/my-org/my-carrots/main/carrot-index.toml
