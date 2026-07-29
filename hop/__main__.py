@@ -8,6 +8,7 @@ app = typer.Typer(
     name="hop",
     help="Task Hopper — extensible shell session manager.",
     no_args_is_help=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
 )
 
 app.add_typer(carrot_app, name="carrot")
@@ -16,24 +17,16 @@ app.command()(init)
 
 def _load_configured_commands() -> None:
     from hop.config import configs
-    from hop.composer import composer
-    from hop.core.directives import TASK
+    from hop.core.commands import register_command
 
-    commands = configs.local_configs().get("commands", {})
+    commands = configs.get().get("commands", {})
     for alias, shell_cmd in commands.items():
-        def make_command(cmd: str):
-            def command(args: list[str] = typer.Argument(None)) -> None:
-                full_cmd = cmd if not args else f"{cmd} {' '.join(args)}"
-                composer.add(TASK, full_cmd)
-            command.__name__ = alias
-            command.__doc__ = f"Run: {cmd}"
-            return command
-        app.command(name=alias)(make_command(shell_cmd))
+        register_command(app, alias, shell_cmd)
 
 
 def main() -> None:
-    load_carrots(app)
     _load_configured_commands()
+    load_carrots(app)
     app()
 
 

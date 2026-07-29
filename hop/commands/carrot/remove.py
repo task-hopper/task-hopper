@@ -4,12 +4,13 @@ from hop.carrot import manager
 
 
 def remove(
-    name: str = typer.Argument(..., help="Name of the carrot to remove"),
+    target: str = typer.Argument(..., help="Carrot declaration to remove from ~/.hoprc"),
 ) -> None:
-    """Remove an installed carrot."""
+    """Remove a carrot from ~/.hoprc (keeps installed files on disk)."""
     try:
-        manager.remove(name)
-        typer.echo(f"Removed carrot '{name}'.")
+        manager.remove_from_config(target)
+        typer.echo(f"Removed '{target}' from ~/.hoprc. Files remain at ~/.hop/carrots/.")
+        typer.echo(f"To fully delete files, run: hop carrot uninstall {target}")
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)

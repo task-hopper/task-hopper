@@ -3,16 +3,19 @@ import typer
 from hop.carrot import manager
 
 
-def install(
-    target: str = typer.Argument(..., help="Carrot name (official), or github:owner/repo"),
-) -> None:
-    """Install a carrot from the official index or a GitHub repo."""
-    try:
-        if target.startswith("github:"):
-            name = manager.install_github(target)
+def install() -> None:
+    """Install all uninstalled carrots declared in ~/.hoprc."""
+    results = manager.install_all()
+    if not results:
+        typer.echo("No carrots declared in ~/.hoprc. Use 'hop carrot add <carrot>' to add one.")
+        return
+    for r in results:
+        if r["status"] == "installed":
+            typer.echo(f"  ✓ {r['name']:<20} installed")
+        elif r["status"] == "already installed":
+            typer.echo(f"  · {r['name']:<20} already installed")
         else:
-            name = manager.install_named(target)
-        typer.echo(f"Installed carrot '{name}'.")
-    except Exception as e:
-        typer.echo(f"Error: {e}", err=True)
+            typer.echo(f"  ✗ {r['name']:<20} failed: {r['error']}", err=True)
+    failed = [r for r in results if r["status"] == "failed"]
+    if failed:
         raise typer.Exit(1)

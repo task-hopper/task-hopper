@@ -4,10 +4,17 @@ from hop.carrot import manager
 
 
 def list_carrots() -> None:
-    """List all installed carrots."""
-    carrots = manager.list_installed()
+    """List all available official carrots and their install status."""
+    try:
+        carrots = manager.list_official()
+    except Exception as e:
+        typer.echo(f"Error fetching carrot index: {e}", err=True)
+        raise typer.Exit(1)
+
     if not carrots:
-        typer.echo("No carrots installed. Run 'hop carrot install <name>' to get started.")
+        typer.echo("No carrots found in the official index.")
         return
+
     for c in carrots:
-        typer.echo(f"  {c['name']:<16} {c['version']:<8} {c['source']:<30} {c['description']}")
+        status = "[installed]" if c["installed"] else ""
+        typer.echo(f"  {c['name']:<20} {c['description']:<45} {status}")

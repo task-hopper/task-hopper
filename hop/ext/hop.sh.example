@@ -21,36 +21,38 @@ _hop_process_output() {
             __hop_message__:*) echo "${line#__hop_message__:}" ;;
             __hop_warning__:*) echo -e "${YELLOW}${line#__hop_warning__:}${RESET}" ;;
             __hop_error__:*)   echo -e "${RED}${line#__hop_error__:}${RESET}"; return 1 ;;
-            *)                 ;;
+            *)                 echo "$line" ;;
         esac
     done
 }
 
 # Main hop function — runs the Python process and processes its output.
+# Output is captured first so _hop_process_output runs in the current shell
+# context (not a subshell), which allows directives like `cd` to take effect.
 hop() {
-    "$(_hop_bin)" "$@" | _hop_process_output
+    local output
+    output="$(FORCE_COLOR=1 "$(_hop_bin)" "$@")"
+    _hop_process_output <<< "$output"
 }
 
 # Debug mode — shows raw output first, then replays through the directive processor.
 hopd() {
     local output
-    output="$("$(_hop_bin)" "$@")"
+    output="$(FORCE_COLOR=1 "$(_hop_bin)" "$@")"
     echo "=== raw output ==="
     echo "$output"
     echo "=== executing ==="
     echo "$output" | _hop_process_output
 }
 
-# Bash completion
-_hop_complete() {
-    local cur="${COMP_WORDS[COMP_CWORD]}"
-    local prev="${COMP_WORDS[COMP_CWORD-1]}"
-    local subcommands
-    subcommands="$("$(_hop_bin)" --help 2>/dev/null | awk '/Commands/{found=1; next} found && /^  [a-z]/{print $1}')"
-
-    if [[ $COMP_CWORD -eq 1 ]]; then
-        COMPREPLY=($(compgen -W "$subcommands" -- "$cur"))
-    fi
+# Bash completion — delegates to Click/Typer's native completion protocol,
+# calling the binary directly to bypass the shell function wrapper.
+_hop_completion() {
+    local IFS=$'\n'
+    COMPREPLY=( $( env COMP_WORDS="${COMP_WORDS[*]}" \
+                   COMP_CWORD=$COMP_CWORD \
+                   _HOP_COMPLETE=complete_bash "$(_hop_bin)" ) )
+    return 0
 }
 
-complete -F _hop_complete hop
+complete -o default -F _hop_completion hop

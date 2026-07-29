@@ -10,6 +10,7 @@ from packaging.version import Version
 
 from hop import __version__
 from hop.carrot.manifest import load_manifest
+from hop.carrot.resolver import CarrotSource, CarrotSourceType, parse
 
 CARROTS_DIR = Path.home() / ".hop" / "carrots"
 SOURCE_FILE = ".carrot-source.json"
@@ -20,7 +21,7 @@ DEFAULT_INDEX_URL = (
 
 def _index_url() -> str:
     from hop.config import configs
-    return configs.global_configs().get("index_url", DEFAULT_INDEX_URL)
+    return configs.get().get("index_url", DEFAULT_INDEX_URL)
 
 
 def _fetch_index() -> dict:
@@ -32,8 +33,13 @@ def _fetch_index() -> dict:
         raise RuntimeError(f"Failed to fetch carrot index from {url}: {e}") from e
 
 
-def _download_tarball(repo: str, dest: Path, subpath: str | None = None) -> None:
-    url = f"https://api.github.com/repos/{repo}/tarball/main"
+def _github_tarball_url(repo: str, ref: str | None) -> str:
+    if ref:
+        return f"https://github.com/{repo}/archive/refs/tags/{ref}.tar.gz"
+    return f"https://api.github.com/repos/{repo}/tarball"
+
+
+def _download_tarball(url: str, dest: Path) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         tarball = tmp_path / "carrot.tar.gz"
@@ -41,12 +47,9 @@ def _download_tarball(repo: str, dest: Path, subpath: str | None = None) -> None
         with tarfile.open(tarball, "r:gz") as tar:
             tar.extractall(tmp_path)
         extracted = next(p for p in tmp_path.iterdir() if p.is_dir())
-        source = extracted / subpath if subpath else extracted
-        if not source.exists():
-            raise FileNotFoundError(f"Path '{subpath}' not found in {repo}")
         if dest.exists():
             shutil.rmtree(dest)
-        shutil.copytree(source, dest)
+        shutil.copytree(extracted, dest)
 
 
 def _write_source(carrot_dir: Path, source: str) -> None:
@@ -60,54 +63,132 @@ def _read_source(carrot_dir: Path) -> str:
     return json.loads(source_file.read_text()).get("source", "unknown")
 
 
-def _validate_and_install(tmp_dir: Path, dest: Path, source: str) -> str:
-    manifest = load_manifest(tmp_dir)
+def _validate_version(manifest_path: Path, carrot_name: str) -> None:
+    manifest = load_manifest(manifest_path)
     if Version(__version__) < Version(manifest.carrot.min_hop_version):
         raise RuntimeError(
-            f"Carrot '{manifest.carrot.name}' requires hop >={manifest.carrot.min_hop_version} "
+            f"Carrot '{carrot_name}' requires hop >={manifest.carrot.min_hop_version} "
             f"but you have {__version__}."
         )
-    if dest.exists():
-        shutil.rmtree(dest)
-    shutil.copytree(tmp_dir, dest)
-    _write_source(dest, source)
-    return manifest.carrot.name
 
 
-def install_named(name: str) -> str:
-    """Install a carrot by name from the official index. Returns the installed carrot name."""
-    index = _fetch_index()
-    entry = index.get("carrots", {}).get(name)
-    if not entry:
-        raise ValueError(f"Carrot '{name}' not found in the official index.")
-    repo = entry["repo"]
-    subpath = entry.get("path")
-    dest = CARROTS_DIR / name
+def _install_from_source(source: CarrotSource) -> str:
     CARROTS_DIR.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp) / name
-        _download_tarball(repo, tmp_path, subpath)
-        return _validate_and_install(tmp_path, dest, source="official")
 
+    if source.source_type == CarrotSourceType.LOCAL:
+        local_path = Path(source.raw).expanduser().resolve()
+        if not local_path.exists():
+            raise FileNotFoundError(f"Local carrot path not found: {local_path}")
+        manifest = load_manifest(local_path)
+        name = manifest.carrot.name
+        dest = CARROTS_DIR / name
+        _validate_version(local_path, name)
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(local_path, dest)
+        _write_source(dest, source.raw)
+        return name
 
-def install_github(target: str) -> str:
-    """Install a carrot from a GitHub repo (format: github:owner/repo). Returns carrot name."""
-    repo = target.removeprefix("github:")
-    name = repo.split("/")[-1]
+    if source.source_type == CarrotSourceType.OFFICIAL:
+        index = _fetch_index()
+        entry = index.get("carrots", {}).get(source.raw)
+        if not entry:
+            raise ValueError(f"Carrot '{source.raw}' not found in the official index.")
+        repo = entry["repo"]
+        url = _github_tarball_url(repo, source.ref)
+        name = source.raw
+    elif source.source_type == CarrotSourceType.GITHUB:
+        url = _github_tarball_url(source.raw, source.ref)
+        name = source.raw.split("/")[-1]
+    elif source.source_type == CarrotSourceType.URL:
+        url = source.raw
+        name = source.raw.rstrip("/").split("/")[-1]
+    else:
+        raise ValueError(f"Unknown carrot source type: {source.source_type}")
+
     dest = CARROTS_DIR / name
-    CARROTS_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp) / name
-        _download_tarball(repo, tmp_path)
-        return _validate_and_install(tmp_path, dest, source=target)
+        tmp_dest = Path(tmp) / name
+        _download_tarball(url, tmp_dest)
+        _validate_version(tmp_dest, name)
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(tmp_dest, dest)
+
+    _write_source(dest, source.display)
+    return name
 
 
-def remove(name: str) -> None:
-    """Remove an installed carrot by name."""
+def install_all() -> list[dict]:
+    """Install all uninstalled carrots declared in ~/.hoprc. Returns per-carrot results."""
+    from hop.config import configs
+    declared = configs.get().get("carrots", [])
+    results = []
+    for raw in declared:
+        source = parse(raw)
+        name = source.raw.split("/")[-1] if "/" in source.raw else source.raw
+        dest = CARROTS_DIR / name
+        if dest.exists():
+            results.append({"raw": raw, "name": name, "status": "already installed"})
+            continue
+        try:
+            installed_name = _install_from_source(source)
+            results.append({"raw": raw, "name": installed_name, "status": "installed"})
+        except Exception as e:
+            results.append({"raw": raw, "name": name, "status": "failed", "error": str(e)})
+    return results
+
+
+def install_one(raw: str) -> str:
+    """Install a single carrot by its declaration string. Returns the installed carrot name."""
+    return _install_from_source(parse(raw))
+
+
+def add_to_config(raw: str) -> None:
+    """Append a carrot declaration to ~/.hoprc carrots list."""
+    from hop.config import configs
+    hoprc = Path.home() / ".hoprc"
+    carrots = configs.get().get("carrots", [])
+    if raw in carrots:
+        raise ValueError(f"'{raw}' is already in your carrots list.")
+    with hoprc.open("a") as f:
+        if not carrots:
+            f.write("\ncarrots:\n")
+        f.write(f"  - {raw}\n")
+
+
+def remove_from_config(raw: str) -> None:
+    """Remove a carrot declaration from ~/.hoprc without deleting installed files."""
+    hoprc = Path.home() / ".hoprc"
+    lines = hoprc.read_text().splitlines(keepends=True)
+    new_lines = [l for l in lines if l.strip() != f"- {raw}"]
+    if len(new_lines) == len(lines):
+        raise ValueError(f"'{raw}' not found in your carrots list.")
+    hoprc.write_text("".join(new_lines))
+
+
+def uninstall(raw: str) -> None:
+    """Remove a carrot from ~/.hoprc and delete its installed files."""
+    remove_from_config(raw)
+    source = parse(raw)
+    name = source.raw.split("/")[-1] if "/" in source.raw else source.raw
     carrot_dir = CARROTS_DIR / name
-    if not carrot_dir.exists():
-        raise ValueError(f"Carrot '{name}' is not installed.")
-    shutil.rmtree(carrot_dir)
+    if carrot_dir.exists():
+        shutil.rmtree(carrot_dir)
+
+
+def list_official() -> list[dict]:
+    """Fetch and return all carrots available in the official index."""
+    index = _fetch_index()
+    installed = {p.name for p in CARROTS_DIR.iterdir()} if CARROTS_DIR.exists() else set()
+    results = []
+    for name, entry in index.get("carrots", {}).items():
+        results.append({
+            "name": name,
+            "description": entry.get("description", ""),
+            "installed": name in installed,
+        })
+    return results
 
 
 def list_installed() -> list[dict]:

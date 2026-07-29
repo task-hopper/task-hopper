@@ -32,11 +32,11 @@ class ConfigHandler:
     def __init__(self) -> None:
         self._global = _load_yaml(Path.home() / ".hoprc")
 
-    def global_configs(self) -> dict:
-        """Return the merged global ~/.hoprc config."""
-        return self._global
-
-    def local_configs(self) -> dict:
+    def get(self) -> dict:
         """Return ~/.hoprc deep-merged with the .hop file in the current directory, if present."""
         local = _load_yaml(Path.cwd() / ".hop")
         return _mergedicts(self._global, local)
+
+    def carrot_configs(self, carrot_name: str) -> dict:
+        """Return the config namespace for the given carrot."""
+        return self.get().get(carrot_name, {})
