@@ -1,96 +1,90 @@
 # Task Hopper
-## Description:
-A project management CLI that makes it easier to navigate and automate your project workflow.
+
+Task Hopper is a shell-native, plugin-based CLI for working smarter in your terminal. Out of the box it works as a configurable command shortcut tool — and is extended into something more powerful through plugins called carrots. It runs commands in your current shell session — so things like `cd`, environment variables, and shell state actually take effect.
 
 ## Installation
-- clone repo
-- install dependencies
-- copy hop/ext/hop.sh.example to somewhere, remove the .example, and add a line like the following to your .bashrc (or other shell rc):
-    source $HOME/Projects/task-hopper/hop/ext/hop.sh
 
-## Features
-- change directories
-- configurations at the global and project-specific level
-- manage environment variables
-- set up custom scripts and commands
-- extensible via carrots, which are installable modules (think gems or eggs)
-- life cycle hooks
+```bash
+curl -fsSL https://raw.githubusercontent.com/task-hopper/task-hopper/main/install.sh | bash
+```
 
-## Core Commands
-#### `cd` to project's root directory, set default environment variables, and run commands if configured
-    hop to <project_alias>
-      -v: verbosely change directory, showing commands that are being run if autorun commands are configured
-      -d: do not run autorun commands, only cd to the project and set env vars
+Then reload your shell:
 
-#### Set environment variables for a given environment
-    hop env <environment>
-      -l: list environments configured for current project
-      -v: verbosely change environment settings
+```bash
+source ~/.bashrc  # or ~/.zshrc
+```
 
-#### Create default configuration for a new project
-    hop init
-      -d: specify directory (default: current directory)
-      -n: specify project name
-      -a: specify project alias, used with commands like `hop edit` and `hop to`
+The installer creates an isolated venv at `~/.hop/venv`, writes a shim to `~/.local/bin/hop`, and automatically sources the shell integration into your `~/.bashrc` or `~/.zshrc`. Running the installer again is safe — it won't duplicate anything.
 
-#### Edit configuration for an existing project
-    hop edit <project_alias>
-      -g: edit global configuration (~/.hoprc)
+**Security note:** hop sources its shell integration directly into your session, and carrots can emit directives that are evaluated in your shell. Only install carrots from sources you trust.
 
-#### List configured projects
-    hop list
-      --no-color: print the list without color
+## Usage & Configuration
 
-#### Print current project details
-    hop current  # with no options, this prints the project alias
-      -n: print current project name
-      -p: print current project path
+After installing, run `hop -h` to see available commands. On a bare install, hop comes with a handful of built-in commands — the rest comes from carrots and your own config.
 
-#### Manage Carrots
-    hop carrot <sub_command>
-      install <repo> (installs carrot)
-      update <repo> (updates specified carrot)
-      ls (lists installed carrots)
+Define command shortcuts in `~/.hoprc` under `commands:`:
 
-## Configuration
-  Configuration is done through YAML files with jinja2 templating. By default, the global configuration file is located at ~/.hoprc. Project-specific configuration can be done by creating a .hop file in the root directory of the project (specified as the path in the global config).
+```yaml
+# ~/.hoprc
+commands:
+  serve: uv run pserve app.ini --reload
+  logs: tail -f /var/log/myapp.log
+```
 
-#### Example configuration files
-##### Example ~/.hoprc
-    some_variable: 123
-    some_other_variable: some string value
+Then run them:
 
-    projects:
-      one:  # this is the alias
-        name: Project One
-        path: ~/projects/project-one
-        autorun:  # run git pull and nvm use immediately after cd'ing to the project and setting environment variables
-          - git pull
-          - nvm use
-        commands:
-          run: yarn start
-          number_please: echo {{some_variable}}
-        env:
-          default:
-            ENV_VAR_A: '{{some_other_variable}}'  # need quotes because YAML will think you're trying to create a dictionary if you try to use { as the first character of a string
-          local:  # this is the name that will be used with `hop env` as in `hop env local`
-            ENV_VAR_B: 456
-          autoload: local
-      two:
-        name: Project Two
-        path: ~/projects/project-two
-  All projects must be configured in the global configuration file and be listed under `projects:`. You must at least specify an alias, name, and path for each project in the global configuration file. Any other configuration, such as custom commands or environment settings, can be set in either the global config or a .hop file located in the path specified for the project.
+```bash
+hop serve
+hop logs
+```
 
-##### Example .hop file
-    autorun:
-        - echo "Hopped to my project"
-    commands:
-      run: rails s -p 1234
-      example-command: echo {{env.dev.VAR}}
-    env:
-      autoload: dev
-      dev:
-        VAR: var in dev environment
-      prod:
-        VAR: var in prod environment
-  Note that in project-level .hop files, you do not need to specify the name and path.
+Values support Jinja2 templating, so you can reference other keys in your config:
+
+```yaml
+my_port: 3000
+
+commands:
+  serve: uv run pserve app.ini --port {{ my_port }}
+```
+
+## Carrots
+
+Carrots are plugins that extend hop with new commands and functionality. A bare install of hop has no domain-specific commands — everything comes from carrots.
+
+Carrots can be official (maintained by the task-hopper project), third-party (from GitHub or a URL), or local (a directory on your machine).
+
+Install a carrot by adding it to your `~/.hoprc`:
+
+```yaml
+carrots:
+  - path:/absolute/path/to/carrot   # local
+  - github:user/repo                 # third-party
+  - warren                           # official
+```
+
+**Official carrots:**
+- [warren](https://github.com/task-hopper/task-hopper-warren) — manage development projects, navigate directories, and handle environment variables
+
+## Building a carrot
+
+Run `hop carrot scaffold` to generate a new carrot interactively.
+
+A carrot is a directory with two things:
+
+- `carrot.toml` — declares the carrot's metadata and maps command names to Python modules
+- One or more Python modules, each with a `register(app)` function that adds commands to the hop CLI
+
+Install your carrot locally by adding it to `~/.hoprc`:
+
+```yaml
+carrots:
+  - path:/absolute/path/to/your-carrot
+```
+
+## Diagnosing your installation
+
+If something isn't working, run `hop doctor` to check the health of your installation, config, and carrots.
+
+## License
+
+MIT — see [LICENSE](LICENSE)
