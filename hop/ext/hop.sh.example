@@ -31,14 +31,14 @@ _hop_process_output() {
 # context (not a subshell), which allows directives like `cd` to take effect.
 hop() {
     local output
-    output="$(FORCE_COLOR=1 "$(_hop_bin)" "$@")"
+    output="$(FORCE_COLOR=1 HOP_SHELL_INVOCATION=1 "$(_hop_bin)" "$@")"
     _hop_process_output <<< "$output"
 }
 
 # Debug mode — shows raw output first, then replays through the directive processor.
 hopd() {
     local output
-    output="$(FORCE_COLOR=1 "$(_hop_bin)" "$@")"
+    output="$(FORCE_COLOR=1 HOP_SHELL_INVOCATION=1 "$(_hop_bin)" "$@")"
     echo "=== raw output ==="
     echo "$output"
     echo "=== executing ==="

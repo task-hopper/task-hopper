@@ -21,7 +21,7 @@ def _render_config(raw: str, context: dict) -> dict:
 
 
 def _load_yaml(path: Path) -> dict:
-    if not path.exists():
+    if not path.is_file():
         return {}
     raw = path.read_text()
     data = yaml.safe_load(raw) or {}

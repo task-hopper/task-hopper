@@ -1,7 +1,24 @@
 [project]
 name = "task-hopper"
 version = "2.0.0"
+description = "A shell-native, plugin-based CLI for working smarter in your terminal."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Josh Crank" }]
 requires-python = ">=3.11"
+keywords = ["cli", "shell", "productivity", "workflow", "environment"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Utilities",
+]
 dependencies = [
     "typer>=0.12",
     "pyyaml>=6.0",
@@ -11,6 +28,11 @@ dependencies = [
     "questionary>=2.0",
     "rich>=13.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/task-hopper/task-hopper"
+Source = "https://github.com/task-hopper/task-hopper"
+Issues = "https://github.com/task-hopper/task-hopper/issues"
 
 [project.scripts]
 hop = "hop.__main__:main"
