@@ -96,16 +96,34 @@ commands:
 - Published to PyPI as `task-hopper 2.0.0`; `curl | bash` install path verified end to end
 
 ### 2. Plugin management
-- Verify `hop carrot add` (local path) works end to end
-- Verify `hop carrot add github:user/repo` works
-- Verify `hop carrot add <name>` (official index) works
-- Verify `hop carrot uninstall` works
-- Implement `hop carrot update` (upgrade installed carrot)
-- Push warren to `jtcrank/task-hopper-warren` on GitHub to test github: install path
-- Eventually transfer warren to `task-hopper` org to test official install path
+
+**Design decisions:**
+- No official index — carrots are installed via config, vimplug-style
+- Two config forms: `org/repo` (GitHub) or `path:` (local); version pinning via `org/repo@vX.Y.Z`
+- No `hop carrot add` / `hop carrot remove` — installing is editing `~/.hoprc` then running `hop carrot install`
+- Warren will live at `task-hopper/warren` (rename from `task-hopper-warren`)
+- Recommended carrots documented in README/docs, no central registry
+
+**Commands to implement:**
+- `hop carrot install` — clone/pull all carrots in config that aren't already installed
+- `hop carrot update` — update all non-pinned carrots; pinned only updates if not already at pinned version
+- `hop carrot update <name>` — update a single carrot by repo name (e.g. `hop carrot update warren`); if multiple installed carrots share the name, prompt user to specify `org/repo`
+- `hop carrot list` — list installed carrots; `-v` / `--verbose` for version and other details
+- `hop carrot scaffold` — already exists, no changes needed
+
+**Deferred:**
+- `hop carrot check` — not enough signal it's needed yet
+- Command aliasing / conflict resolution — revisit if conflicts become a real problem
+- Developer carrot health check — defer, scaffold covers the immediate need
+
+**To do before next release:**
+- Rename `task-hopper-warren` repo to `task-hopper/warren`
+- Update warren references in README and docs
 
 ### 3. Carrot protocol cleanup
 - Revisit `project-commands` entry in `carrot.toml` — modules that register behavior without being direct commands may warrant a separate `[hooks]` or `[modules]` section
+- Decide Jinja2 templating scope in config — should any top-level key be referenceable as a template variable, or should there be a dedicated `variables:` section?
+- Carrot config lives as a flat top-level key matching the carrot name (e.g. `warren:`) — revisit if this causes confusion as more carrots are added
 
 ### 4. Documentation
 - Core `README.md` — installation instructions, quick start

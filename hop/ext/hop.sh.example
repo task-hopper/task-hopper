@@ -10,12 +10,14 @@ _hop_bin() {
 }
 
 # Process a stream of hop directives, evaluating tasks in the current shell context.
+# Takes the output string as $1 and reads it on fd 3, leaving fd 0 (stdin) as the
+# terminal so that long-running task commands (dev servers, etc.) inherit it correctly.
 _hop_process_output() {
     local YELLOW='\033[0;33m'
     local RED='\033[0;31m'
     local RESET='\033[0m'
 
-    while IFS= read -r line; do
+    while IFS= read -r line <&3; do
         case "$line" in
             __hop_task__:*)    eval "${line#__hop_task__:}" ;;
             __hop_message__:*) echo "${line#__hop_message__:}" ;;
@@ -23,7 +25,7 @@ _hop_process_output() {
             __hop_error__:*)   echo -e "${RED}${line#__hop_error__:}${RESET}"; return 1 ;;
             *)                 echo "$line" ;;
         esac
-    done
+    done 3<<< "$1"
 }
 
 # Main hop function — runs the Python process and processes its output.
@@ -32,7 +34,7 @@ _hop_process_output() {
 hop() {
     local output
     output="$(FORCE_COLOR=1 HOP_SHELL_INVOCATION=1 "$(_hop_bin)" "$@")"
-    _hop_process_output <<< "$output"
+    _hop_process_output "$output"
 }
 
 # Debug mode — shows raw output first, then replays through the directive processor.
@@ -42,7 +44,7 @@ hopd() {
     echo "=== raw output ==="
     echo "$output"
     echo "=== executing ==="
-    echo "$output" | _hop_process_output
+    _hop_process_output "$output"
 }
 
 # Bash completion — delegates to Click/Typer's native completion protocol,

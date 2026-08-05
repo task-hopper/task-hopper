@@ -20,12 +20,28 @@ def _render_config(raw: str, context: dict) -> dict:
     return yaml.safe_load(rendered) or {}
 
 
+def _extract_scalars(raw: str) -> dict:
+    """Parse only top-level scalar key:value pairs for use as template context."""
+    context = {}
+    for line in raw.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("#") or ":" not in stripped or stripped.startswith("-"):
+            continue
+        if line and line[0] in (" ", "\t"):
+            continue
+        key, _, value = stripped.partition(":")
+        value = value.strip()
+        if value and not value.startswith("{") and not value.startswith("["):
+            context[key.strip()] = value
+    return context
+
+
 def _load_yaml(path: Path) -> dict:
     if not path.is_file():
         return {}
     raw = path.read_text()
-    data = yaml.safe_load(raw) or {}
-    return _render_config(raw, data)
+    context = _extract_scalars(raw)
+    return _render_config(raw, context)
 
 
 class ConfigHandler:
