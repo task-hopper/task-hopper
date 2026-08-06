@@ -107,10 +107,10 @@ def _check_config() -> Section:
     s.checks.append(Check("~/.hoprc exists", Status.PASS))
 
     try:
-        raw = hoprc.read_text()
-        yaml.safe_load(raw)
+        from hop.core.config import _load_yaml as _load_hop_yaml
+        _load_hop_yaml(hoprc)
         s.checks.append(Check("~/.hoprc is valid YAML", Status.PASS))
-    except yaml.YAMLError as e:
+    except Exception as e:
         s.checks.append(Check(
             "~/.hoprc is valid YAML",
             Status.FAIL,
@@ -121,9 +121,10 @@ def _check_config() -> Section:
     local_hop = Path.cwd() / ".hop"
     if local_hop.is_file():
         try:
-            yaml.safe_load(local_hop.read_text())
+            from hop.core.config import _load_yaml as _load_hop_yaml
+            _load_hop_yaml(local_hop)
             s.checks.append(Check(".hop (cwd) is valid YAML", Status.PASS))
-        except yaml.YAMLError as e:
+        except Exception as e:
             s.checks.append(Check(
                 ".hop (cwd) is valid YAML",
                 Status.FAIL,

@@ -24,10 +24,6 @@ def _carrots_dirs() -> list[Path]:
             p = Path(source.raw).expanduser()
             if p.is_dir():
                 dirs.append(p)
-    for path_str in configs.get().get("carrot_paths", []):
-        p = Path(path_str).expanduser()
-        if p.is_dir():
-            dirs.append(p)
     return dirs
 
 
