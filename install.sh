@@ -14,7 +14,7 @@ fi
 
 echo "Installing task-hopper..."
 
-mkdir -p "$HOP_DIR" "$BIN_DIR"
+mkdir -p "$HOP_DIR" "$HOP_DIR/carrots" "$BIN_DIR"
 
 # Create isolated venv
 python3 -m venv "$VENV_DIR"
