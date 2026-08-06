@@ -81,9 +81,57 @@ carrots:
   - path:/absolute/path/to/your-carrot
 ```
 
-## Diagnosing your installation
+## Commands
 
-If something isn't working, run `hop doctor` to check the health of your installation, config, and carrots.
+### `hop init`
+
+Create a starter `~/.hoprc` config file. Safe to run on a fresh install — does nothing if the file already exists.
+
+```bash
+hop init
+```
+
+### `hop doctor`
+
+Diagnose your hop installation. Checks install health, config validity, and the status of each installed carrot.
+
+```bash
+hop doctor
+```
+
+### `hop carrot install`
+
+Clone all GitHub carrots declared in `~/.hoprc` that aren't already installed.
+
+```bash
+hop carrot install
+```
+
+### `hop carrot update [name]`
+
+Update all installed carrots. Pass a carrot name to update only that one. Pinned carrots won't update if they're already at the pinned version.
+
+```bash
+hop carrot update          # update all
+hop carrot update warren   # update warren only
+```
+
+### `hop carrot list`
+
+List installed carrots. Use `-v` / `--verbose` for version and source details.
+
+```bash
+hop carrot list
+hop carrot list -v
+```
+
+### `hop carrot scaffold`
+
+Interactively generate a new carrot. Prompts for name, description, author, location, and first command — then writes the directory structure and optionally adds it to `~/.hoprc`.
+
+```bash
+hop carrot scaffold
+```
 
 ## License
 
