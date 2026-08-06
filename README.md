@@ -62,6 +62,8 @@ carrots:
   - warren                           # official
 ```
 
+Then run `hop carrot install` to clone any GitHub carrots that aren't already installed. Local (`path:`) carrots are loaded directly from disk and don't need this step.
+
 **Official carrots:**
 - [warren](https://github.com/task-hopper/task-hopper-warren) — manage development projects, navigate directories, and handle environment variables
 
