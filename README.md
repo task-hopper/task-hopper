@@ -1,5 +1,19 @@
 # Task Hopper
 
+```
+            /\
+  ___      /  \
+ /   \     |  |
+/  |  \    |  |
+\ / \  ~~_~  /
+    /        \
+  \{   O   O  }/
+--<      Y     >---
+  /{     |    }\
+    \    ^   /
+     '__>0<_'
+```
+
 Task Hopper is a shell-native, plugin-based CLI for working smarter in your terminal. Out of the box it works as a configurable command shortcut tool — and is extended into something more powerful through plugins called carrots. It runs commands in your current shell session — so things like `cd`, environment variables, and shell state actually take effect.
 
 ## Installation
@@ -65,7 +79,7 @@ carrots:
 Then run `hop carrot install` to clone any GitHub carrots that aren't already installed. Local (`path:`) carrots are loaded directly from disk and don't need this step.
 
 **Official carrots:**
-- [warren](https://github.com/task-hopper/task-hopper-warren) — manage development projects, navigate directories, and handle environment variables
+- [warren](https://github.com/task-hopper/warren) — manage development projects, navigate directories, and handle environment variables
 
 ## Building a carrot
 
